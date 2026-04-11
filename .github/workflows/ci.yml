@@ -16,7 +16,7 @@ jobs:
       - name: Install Sui
         run: |
           curl -fsSL https://install.sui.io | bash -s -- --version 1.69.3
-          echo "$HOME/.sui/bin" >> $GITHUB_PATH
+          sudo mv $HOME/.sui/bin/sui /usr/local/bin/
 
       - name: Verify Sui Installation
         run: sui --version
