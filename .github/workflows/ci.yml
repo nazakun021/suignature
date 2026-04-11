@@ -15,8 +15,10 @@ jobs:
 
       - name: Install Sui
         run: |
-          curl -fsSL https://install.sui.io | bash -s -- --version 1.69.3
-          sudo mv $HOME/.sui/bin/sui /usr/local/bin/
+          curl -sfLO https://github.com/MystenLabs/sui/releases/download/testnet-v1.69.2/sui-testnet-v1.69.2-ubuntu-x86_64.tgz
+          tar -xzf sui-testnet-v1.69.2-ubuntu-x86_64.tgz
+          sudo mv sui /usr/local/bin/
+          sui --version
 
       - name: Verify Sui Installation
         run: sui --version
