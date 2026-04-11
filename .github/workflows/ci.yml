@@ -1,0 +1,28 @@
+name: Move CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Sui
+        run: |
+          curl -fsSL https://install.sui.io | bash -s -- --version 1.69.3
+          echo "$HOME/.sui/bin" >> $GITHUB_PATH
+
+      - name: Verify Sui Installation
+        run: sui --version
+
+      - name: Move Build
+        run: sui move build
+
+      - name: Move Test
+        run: sui move test
