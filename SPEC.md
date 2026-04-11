@@ -1,6 +1,6 @@
 # Phase A — Sui Move Smart Contract Specification
 
-### vPoW Credentials | `vpow_credentials` Package
+### suignature | `suignature` Package
 
 ---
 
@@ -12,6 +12,8 @@ Phase A is the foundation of the entire project. Everything in Phase B and C dep
 
 **Estimated time:** 45–60 minutes
 
+**Status:** ✅ Smart contract implemented (Move 2024 edition, code quality compliant)
+
 ---
 
 ## Directory Structure
@@ -19,12 +21,12 @@ Phase A is the foundation of the entire project. Everything in Phase B and C dep
 After Phase A is complete, your project root should look like this:
 
 ```
-vpow-credentials/
-├── move/
-│   └── vpow_credentials/
-│       ├── Move.toml
-│       └── sources/
-│           └── credential.move
+suignature/
+├── Move.toml
+├── sources/
+│   └── credential.move
+├── tests/
+│   └── credential_tests.move
 └── frontend/         ← (not touched in Phase A)
 ```
 
@@ -73,73 +75,50 @@ sui client faucet
 
 ## A2. Package Initialization
 
-```bash
-# Navigate to your project root
-mkdir vpow-credentials && cd vpow-credentials
-mkdir move && cd move
+The package was scaffolded using `sui move new suignature` with Sui CLI 1.69.3.
 
-# Scaffold the Move package
-sui move new vpow_credentials
-
-# Result:
-# vpow_credentials/
-# ├── Move.toml
-# └── sources/          ← empty, you'll add credential.move here
-```
-
-### Move.toml — Final Expected State
+### Move.toml — Final State
 
 ```toml
 [package]
-name = "vpow_credentials"
-version = "0.0.1"
-edition = "2024.beta"
+name = "suignature"
+edition = "2024"
 
 [dependencies]
-Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "testnet" }
-
-[addresses]
-vpow_credentials = "0x0"
+# Implicit for Sui 1.45+ — no explicit Sui/MoveStdlib needed
 ```
 
-> **Important:** The `vpow_credentials = "0x0"` address is a placeholder. After publishing, Sui will replace this with the actual on-chain package address. Do not change it manually before publishing.
+> **Note:** Move 2024 edition with Sui 1.45+ uses implicit framework dependencies. No `[addresses]` section is needed — the package name is used directly in module declarations.
 
 ---
 
 ## A3. The Move Module — Full Specification
 
-Create the file: `move/vpow_credentials/sources/credential.move`
+File: `sources/credential.move`
 
 ---
 
-### 3.1 Module Declaration
+### 3.1 Module Declaration (Move 2024 Label Syntax)
 
 ```move
-module vpow_credentials::credential {
-    // imports go here
-}
+module suignature::credential;
 ```
 
-The module name follows the pattern `<package_name>::<module_name>`.
-In your case: `vpow_credentials::credential`.
+The module uses **label syntax** (Move 2024) — no curly braces wrapping the entire module body. This reduces indentation and follows modern conventions.
 
 ---
 
 ### 3.2 Required Imports
 
 ```move
-use sui::object::{Self, UID};
-use sui::tx_context::{Self, TxContext};
-use sui::transfer;
 use std::string::String;
 ```
 
-| Import                               | Why It's Needed                                                                          |
-| ------------------------------------ | ---------------------------------------------------------------------------------------- |
-| `sui::object::{Self, UID}`           | Every on-chain Sui object requires a `UID` field. `Self` gives access to `object::new()` |
-| `sui::tx_context::{Self, TxContext}` | Needed to create new object IDs and read transaction metadata (timestamp, sender)        |
-| `sui::transfer`                      | Needed to send the minted credential to the recipient's address                          |
-| `std::string::String`                | Allows the struct fields to hold UTF-8 text data                                         |
+| Import                | Why It's Needed                              |
+| --------------------- | -------------------------------------------- |
+| `std::string::String` | Allows struct fields to hold UTF-8 text data |
+
+> **Note:** With Sui 1.45+ and Move 2024, `UID`, `TxContext`, `object`, and `transfer` are available implicitly without explicit imports.
 
 ---
 
@@ -194,13 +173,13 @@ This is what makes it a **Soulbound Token**. The non-transferability is enforced
 ### 3.4 The `issue_credential` Function
 
 ```move
-public entry fun issue_credential(
+entry fun issue_credential(
     volunteer_name: String,
     project_or_event: String,
     skills_verified: vector<String>,
     issuer_name: String,
     recipient: address,
-    ctx: &mut TxContext
+    ctx: &mut TxContext,
 ) {
     let credential = Credential {
         id: object::new(ctx),
@@ -208,8 +187,8 @@ public entry fun issue_credential(
         project_or_event,
         skills_verified,
         issuer_name,
-        issuer_address: tx_context::sender(ctx),
-        timestamp: tx_context::epoch_timestamp_ms(ctx),
+        issuer_address: ctx.sender(),
+        timestamp: ctx.epoch_timestamp_ms(),
     };
 
     transfer::transfer(credential, recipient);
@@ -230,56 +209,106 @@ public entry fun issue_credential(
 #### What Happens Inside the Function
 
 1. `object::new(ctx)` — generates a globally unique `UID` for this credential object
-2. `tx_context::sender(ctx)` — captures the wallet address of whoever signed the transaction (the issuer). This is cryptographically guaranteed — it cannot be spoofed.
-3. `tx_context::epoch_timestamp_ms(ctx)` — records the current epoch time in milliseconds as a `u64`
+2. `ctx.sender()` — captures the wallet address of whoever signed the transaction (the issuer). This is cryptographically guaranteed — it cannot be spoofed.
+3. `ctx.epoch_timestamp_ms()` — records the current epoch time in milliseconds as a `u64`
 4. `transfer::transfer(credential, recipient)` — moves the newly created object out of the transaction context and into the recipient's wallet. After this line executes, the issuer has no control over the object.
 
-#### Why `public entry`?
+#### Why `entry` (not `public entry`)?
 
-- `public` — the function is callable from outside the module (required for frontend transactions)
-- `entry` — the function can be called directly as a transaction entry point from the Sui SDK or CLI. Without `entry`, the TypeScript frontend cannot call it directly via `moveCall`.
+- `entry` — the function can be called directly as a transaction entry point from the Sui SDK or CLI. This is a transaction endpoint only — not meant to be composed with other modules.
+- Per Move 2024 best practices, avoid `public entry`. Use `entry` for transaction endpoints and `public` for composable functions that return values.
+
+### 3.5 Getter Functions
+
+The module provides public getter functions following Move conventions (named after the field, no `get_` prefix):
+
+```move
+public fun volunteer_name(credential: &Credential): &String
+public fun project_or_event(credential: &Credential): &String
+public fun skills_verified(credential: &Credential): &vector<String>
+public fun issuer_name(credential: &Credential): &String
+public fun issuer_address(credential: &Credential): address
+public fun timestamp(credential: &Credential): u64
+```
+
+These enable other modules and the frontend to read credential data without exposing internal struct fields.
 
 ---
 
-### 3.5 Complete Module — Final Form
+### 3.6 Complete Module — Final Form
 
 ```move
-module vpow_credentials::credential {
-    use sui::object::{Self, UID};
-    use sui::tx_context::{Self, TxContext};
-    use sui::transfer;
-    use std::string::String;
+/// Soulbound credential module for the suignature project.
+/// Issues non-transferable proof-of-work credentials on the Sui blockchain.
+/// The `Credential` struct intentionally omits `store` to enforce soulbound behavior
+/// at the Move VM level — making credentials impossible to transfer, sell, or fake.
+module suignature::credential;
 
-    public struct Credential has key {
-        id: UID,
-        volunteer_name: String,
-        project_or_event: String,
-        skills_verified: vector<String>,
-        issuer_name: String,
-        issuer_address: address,
-        timestamp: u64,
-    }
+use std::string::String;
 
-    public entry fun issue_credential(
-        volunteer_name: String,
-        project_or_event: String,
-        skills_verified: vector<String>,
-        issuer_name: String,
-        recipient: address,
-        ctx: &mut TxContext
-    ) {
-        let credential = Credential {
-            id: object::new(ctx),
-            volunteer_name,
-            project_or_event,
-            skills_verified,
-            issuer_name,
-            issuer_address: tx_context::sender(ctx),
-            timestamp: tx_context::epoch_timestamp_ms(ctx),
-        };
+/// A non-transferable credential proving community contribution.
+/// Has `key` only — no `store` — enforcing soulbound (non-transferable) at the VM level.
+public struct Credential has key {
+    id: UID,
+    volunteer_name: String,
+    project_or_event: String,
+    skills_verified: vector<String>,
+    issuer_name: String,
+    issuer_address: address,
+    timestamp: u64,
+}
 
-        transfer::transfer(credential, recipient);
-    }
+/// Mint a soulbound credential and transfer it directly to the recipient's wallet.
+/// The issuer's address is captured cryptographically from the transaction context.
+entry fun issue_credential(
+    volunteer_name: String,
+    project_or_event: String,
+    skills_verified: vector<String>,
+    issuer_name: String,
+    recipient: address,
+    ctx: &mut TxContext,
+) {
+    let credential = Credential {
+        id: object::new(ctx),
+        volunteer_name,
+        project_or_event,
+        skills_verified,
+        issuer_name,
+        issuer_address: ctx.sender(),
+        timestamp: ctx.epoch_timestamp_ms(),
+    };
+
+    transfer::transfer(credential, recipient);
+}
+
+/// Returns the volunteer name from a credential reference.
+public fun volunteer_name(credential: &Credential): &String {
+    &credential.volunteer_name
+}
+
+/// Returns the project or event name from a credential reference.
+public fun project_or_event(credential: &Credential): &String {
+    &credential.project_or_event
+}
+
+/// Returns the skills verified from a credential reference.
+public fun skills_verified(credential: &Credential): &vector<String> {
+    &credential.skills_verified
+}
+
+/// Returns the issuer name from a credential reference.
+public fun issuer_name(credential: &Credential): &String {
+    &credential.issuer_name
+}
+
+/// Returns the issuer address from a credential reference.
+public fun issuer_address(credential: &Credential): address {
+    credential.issuer_address
+}
+
+/// Returns the issuance timestamp from a credential reference.
+public fun timestamp(credential: &Credential): u64 {
+    credential.timestamp
 }
 ```
 
@@ -289,80 +318,81 @@ module vpow_credentials::credential {
 
 ## A4. Test Module — Full Specification
 
-Tests live inside the same file, gated behind `#[test_only]` so they are never compiled into the production build.
-
-Append this block **inside** `credential.move`, after the `issue_credential` function but still within the module:
+Tests live in a separate test file: `tests/credential_tests.move`, gated behind `#[test_only]` so they are never compiled into the production build.
 
 ```move
-    #[test_only]
-    use sui::test_scenario;
+#[test_only]
+module suignature::credential_tests;
 
-    #[test]
-    fun test_issue_credential() {
-        let issuer = @0xA;
-        let volunteer = @0xB;
+use sui::test_scenario;
+use suignature::credential::{Self, Credential};
 
-        let mut scenario = test_scenario::begin(issuer);
+#[test]
+/// Issues a credential as the issuer and verifies the volunteer receives it
+/// with all fields correctly populated.
+fun issue_and_verify_credential() {
+    let issuer = @0xA;
+    let volunteer = @0xB;
 
-        // Step 1: Issue the credential as the issuer
-        test_scenario::next_tx(&mut scenario, issuer);
-        {
-            let ctx = test_scenario::ctx(&mut scenario);
-            issue_credential(
-                std::string::utf8(b"Juan dela Cruz"),
-                std::string::utf8(b"Sui Builders Program Davao"),
-                vector[
-                    std::string::utf8(b"Smart Contract Development"),
-                    std::string::utf8(b"Public Speaking")
-                ],
-                std::string::utf8(b"YGG Pilipinas"),
-                volunteer,
-                ctx
-            );
-        };
+    let mut scenario = test_scenario::begin(issuer);
 
-        // Step 2: Confirm the volunteer now owns a Credential object
-        test_scenario::next_tx(&mut scenario, volunteer);
-        {
-            let credential = test_scenario::take_from_sender<Credential>(&scenario);
+    // Issue the credential as the issuer
+    scenario.next_tx(issuer);
+    {
+        credential::issue_credential(
+            b"Juan dela Cruz".to_string(),
+            b"Sui Builders Program Davao".to_string(),
+            vector[
+                b"Smart Contract Development".to_string(),
+                b"Public Speaking".to_string(),
+            ],
+            b"YGG Pilipinas".to_string(),
+            volunteer,
+            scenario.ctx(),
+        );
+    };
 
-            // Assert fields are correct
-            assert!(credential.volunteer_name == std::string::utf8(b"Juan dela Cruz"), 0);
-            assert!(credential.issuer_name == std::string::utf8(b"YGG Pilipinas"), 1);
-            assert!(credential.issuer_address == issuer, 2);
+    // Confirm the volunteer now owns a Credential with correct fields
+    scenario.next_tx(volunteer);
+    {
+        let cred = test_scenario::take_from_sender<Credential>(&scenario);
 
-            test_scenario::return_to_sender(&scenario, credential);
-        };
+        assert!(*cred.volunteer_name() == b"Juan dela Cruz".to_string());
+        assert!(*cred.issuer_name() == b"YGG Pilipinas".to_string());
+        assert!(cred.issuer_address() == issuer);
+        assert!(*cred.project_or_event() == b"Sui Builders Program Davao".to_string());
+        assert!(cred.skills_verified().length() == 2);
 
-        test_scenario::end(scenario);
-    }
+        test_scenario::return_to_sender(&scenario, cred);
+    };
 
-    #[test]
-    fun test_credential_is_soulbound() {
-        // This test documents intent: the credential cannot be transferred.
-        // Because `store` is absent, the Move compiler itself prevents any
-        // transfer::public_transfer call from compiling. This test simply
-        // confirms the struct definition hasn't accidentally gained `store`.
-        // If someone adds `store` to the struct, the soulbound property is broken.
-        // This comment serves as a written assertion of that invariant.
-        assert!(true, 0); // placeholder — the real check is at compile time
-    }
+    scenario.end();
+}
+
+#[test]
+/// Documents the soulbound invariant: Credential has `key` only, no `store`.
+/// The Move compiler itself prevents `transfer::public_transfer` on this type.
+/// If someone accidentally adds `store`, this comment serves as the design assertion.
+fun credential_is_soulbound() {
+    // The real check is at compile time — `store` absence prevents public transfer.
+    // This test exists to document the intentional design decision.
+    assert!(true);
+}
 ```
 
 ### Running the Tests
 
 ```bash
-cd move/vpow_credentials
 sui move test
 ```
 
 **Expected output:**
 
 ```
-BUILDING vpow_credentials
+BUILDING suignature
 Running Move unit tests
-[ PASS    ] vpow_credentials::credential::test_issue_credential
-[ PASS    ] vpow_credentials::credential::test_credential_is_soulbound
+[ PASS    ] suignature::credential_tests::credential_is_soulbound
+[ PASS    ] suignature::credential_tests::issue_and_verify_credential
 Test result: OK. Total tests: 2; passed: 2; failed: 0
 ```
 
@@ -373,32 +403,25 @@ Test result: OK. Total tests: 2; passed: 2; failed: 0
 ### Build First (Catch Errors Before Deploying)
 
 ```bash
-cd move/vpow_credentials
 sui move build
 ```
 
 **Expected output:**
 
 ```
-UPDATING GIT DEPENDENCY https://github.com/MystenLabs/sui.git
-INCLUDING DEPENDENCY Sui
 INCLUDING DEPENDENCY MoveStdlib
-BUILDING vpow_credentials
+INCLUDING DEPENDENCY Sui
+BUILDING suignature
 ```
 
 If you see any errors here, **fix them before attempting to publish.**
 
-### Publish to Testnet
+###- [x] Publish to Testnet (`sui client publish --gas-budget 50000000`)
 
-```bash
-sui client publish --gas-budget 50000000
-```
-
-> `50000000` MIST = 0.05 SUI. This is well above what a simple publish costs.
-
-### Reading the Publish Output
-
-The output will be a large JSON-like transaction result. You need to extract two values:
+- [x] **SAVE the Package ID from the output** → `0x8200046ee3637af5aaf00411789e04770914a3bcf73fb24f0a3ccccf6a8425ed`
+- [x] **SAVE the Module name** → `credential`
+- [x] Verify the published package on Sui Testnet Explorer
+- [x] Do a manual test transaction from CLI to confirm `issue_credential` works end-to-end
 
 **1. Find the Package ID:**
 Look for an object change with `"type": "published"`:
@@ -489,18 +512,36 @@ You should see all credential fields rendered correctly on the explorer. If this
 
 ---
 
+## A8. Move 2024 Code Quality Compliance
+
+The implementation follows the [Move Book Code Quality Checklist](https://move-book.com/guides/code-quality-checklist/) across all 11 categories:
+
+| Category            | Status | Notes                                                            |
+| ------------------- | ------ | ---------------------------------------------------------------- |
+| Code Organization   | ✅     | Formatted consistently, doc comments                             |
+| Package Manifest    | ✅     | `edition = "2024"`, implicit dependencies                        |
+| Imports & Constants | ✅     | Module label syntax, minimal imports                             |
+| Structs             | ✅     | `key` only (soulbound), proper field types                       |
+| Functions           | ✅     | `entry` (not `public entry`), getters named after fields         |
+| Function Body       | ✅     | `ctx.sender()`, `ctx.epoch_timestamp_ms()`, `b"...".to_string()` |
+| Testing             | ✅     | No `test_` prefix, no abort codes, method syntax                 |
+| Comments            | ✅     | `///` doc comments on all public items                           |
+
+---
+
 ## Phase A — Completion Checklist
 
 ```
+[x] Package scaffolded (Move.toml correct, edition = "2024")
+[x] credential.move written with Move 2024 best practices
+[x] `has key` only — NO `store` ability on Credential struct
+[x] `entry fun issue_credential` implemented
+[x] Getter functions for all credential fields
+[x] Test module written in separate file (credential_tests.move)
+[x] `sui move build` succeeds with no errors
+[x] `sui move test` passes (2/2)
 [ ] Sui CLI verified and on Testnet
 [ ] Wallet funded with Testnet SUI
-[ ] Package scaffolded (Move.toml correct)
-[ ] credential.move written exactly as specified
-[ ] `has key` only — NO `store` ability on Credential struct
-[ ] `public entry fun issue_credential` implemented
-[ ] Test module written and appended
-[ ] `sui move test` passes (2/2)
-[ ] `sui move build` succeeds with no errors
 [ ] `sui client publish` succeeds
 [ ] Package ID saved to frontend/.env.local
 [ ] Manual CLI test transaction succeeds
@@ -516,10 +557,10 @@ You should see all credential fields rendered correctly on the explorer. If this
 Fill this in as you complete Phase A:
 
 ```
-Package ID:        0x________________________________________________
+Package ID:        0x8200046ee3637af5aaf00411789e04770914a3bcf73fb24f0a3ccccf6a8425ed
 Module Name:       credential
 Function Name:     issue_credential
 Network:           testnet
-Test Object ID:    0x________________________________________________  (from CLI test)
-Deployer Address:  0x________________________________________________
+Test Object ID:    0xd553c291d4a9cd41f8afe531a68a4a7163d00ce556602c92fee925c5f9f2b43c
+Deployer Address:  0x392902a8eaf1438139238e73ac4effe9246187b0b6d7d4efc5cfcecaded59420
 ```

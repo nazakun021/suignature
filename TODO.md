@@ -1,4 +1,4 @@
-# vPoW Credentials — Master TODO
+# suignature — Master TODO
 
 > **Hackathon deadline:** Sunday April 12, 2026 @ 4:00 PM
 > **Demo window:** ~3 minutes, live on Sui Testnet
@@ -10,53 +10,62 @@
 
 ### A1. Project Setup
 
-- [ ] Verify Sui CLI is installed and updated (`sui --version`)
-- [ ] Verify Move is installed (`sui move --version`)
-- [ ] Create new Move package (`sui move new vpow_credentials`)
-- [ ] Confirm `Move.toml` is generated correctly
-- [ ] Set network to Testnet (`sui client switch --env testnet`)
-- [ ] Confirm active address (`sui client active-address`)
-- [ ] Request Testnet SUI from faucet (`sui client faucet`)
-- [ ] Confirm wallet balance (`sui client balance`)
+- [x] Verify Sui CLI is installed and updated (`sui --version` → 1.69.3)
+- [x] Create new Move package (`sui move new suignature`)
+- [x] Confirm `Move.toml` is generated correctly (edition = "2024", implicit deps)
+- [x] Set network to Testnet (`sui client switch --env testnet`)
+- [x] Confirm active address (`sui client active-address`)
+- [x] Request Testnet SUI from faucet (`sui client faucet`)
+- [x] Confirm wallet balance (`sui client balance`)
 
 ### A2. Write the Move Module
 
-- [ ] Create `sources/credential.move`
-- [ ] Define the `Credential` struct with fields:
-  - [ ] `id: UID`
-  - [ ] `volunteer_name: String`
-  - [ ] `project_or_event: String`
-  - [ ] `skills_verified: vector<String>`
-  - [ ] `issuer_name: String`
-  - [ ] `timestamp: u64`
-- [ ] Confirm struct has `key` ability only (NO `store` — this enforces soulbound)
-- [ ] Add required imports (`sui::object`, `sui::tx_context`, `std::string`)
-- [ ] Write `issue_credential` public entry function:
-  - [ ] Accept all credential fields as parameters
-  - [ ] Accept `recipient: address` parameter
-  - [ ] Use `tx_context::epoch_timestamp_ms` for timestamp
-  - [ ] Use `transfer::transfer` to send object to recipient
-- [ ] Add module-level `use` statements cleanly
+- [x] Create `sources/credential.move`
+- [x] Define the `Credential` struct with fields:
+  - [x] `id: UID`
+  - [x] `volunteer_name: String`
+  - [x] `project_or_event: String`
+  - [x] `skills_verified: vector<String>`
+  - [x] `issuer_name: String`
+  - [x] `issuer_address: address`
+  - [x] `timestamp: u64`
+- [x] Confirm struct has `key` ability only (NO `store` — this enforces soulbound)
+- [x] Add required imports (only `std::string::String` — rest implicit in Move 2024)
+- [x] Write `issue_credential` entry function:
+  - [x] Accept all credential fields as parameters
+  - [x] Accept `recipient: address` parameter
+  - [x] Use `ctx.epoch_timestamp_ms()` for timestamp (method syntax)
+  - [x] Use `transfer::transfer` to send object to recipient
+- [x] Add public getter functions for all fields (named after field, no `get_` prefix)
+- [x] Use Move 2024 module label syntax (no curly braces)
+- [x] Use `entry fun` instead of `public entry fun` (code quality compliance)
+- [x] Use method syntax: `ctx.sender()`, `ctx.epoch_timestamp_ms()`
+- [x] Add `///` doc comments to module, struct, and all public functions
 
 ### A3. Test the Module
 
-- [ ] Write a test module inside `credential.move` using `#[test_only]`
-- [ ] Write `test_issue_credential` test:
-  - [ ] Create a mock `TxContext`
-  - [ ] Call `issue_credential` with dummy data
-  - [ ] Assert object was created (no panic = pass)
-- [ ] Run tests locally (`sui move test`)
-- [ ] Confirm all tests pass with zero errors
+- [x] Write test module in `tests/credential_tests.move` (separate file)
+- [x] Write `issue_and_verify_credential` test:
+  - [x] Use `test_scenario` for multi-party transfer testing
+  - [x] Call `issue_credential` with dummy data
+  - [x] Assert all credential fields are correct using getter functions
+  - [x] Verify volunteer receives the credential object
+- [x] Write `credential_is_soulbound` test (documents soulbound invariant)
+- [x] Run tests locally (`sui move test`)
+- [x] Confirm all tests pass with zero errors (2/2 passed)
+- [x] Use `b"...".to_string()` instead of `std::string::utf8()`
+- [x] Use method syntax for scenario operations
+- [x] No `test_` prefix on test function names
+- [x] No abort codes in `assert!`
 
 ### A4. Build & Deploy
 
-- [ ] Build the package (`sui move build`)
-- [ ] Confirm build succeeds with no warnings
-- [ ] Publish to Testnet (`sui client publish --gas-budget 50000000`)
-- [ ] **SAVE the Package ID from the output** → copy to `.env.local` as `NEXT_PUBLIC_PACKAGE_ID`
-- [ ] **SAVE the Module name** → `credential` (or whatever you named it)
-- [ ] Verify the published package on Sui Testnet Explorer
-- [ ] Do a manual test transaction from CLI to confirm `issue_credential` works end-to-end
+- [x] Build the package (`sui move build` — succeeds with no errors)
+- [x] Publish to Testnet (`sui client publish --gas-budget 50000000`)
+- [x] **SAVE the Package ID from the output** → `0x8200046ee3637af5aaf00411789e04770914a3bcf73fb24f0a3ccccf6a8425ed`
+- [x] **SAVE the Module name** → `credential`
+- [x] Verify the published package on Sui Testnet Explorer
+- [x] Do a manual test transaction from CLI to confirm `issue_credential` works end-to-end
 
 ---
 
@@ -64,7 +73,7 @@
 
 ### B1. Project Setup
 
-- [ ] Scaffold Next.js app (`npx create-next-app@latest vpow-frontend`)
+- [ ] Scaffold Next.js app (`npx create-next-app@latest suignature-frontend`)
   - [ ] TypeScript: Yes
   - [ ] Tailwind CSS: Yes
   - [ ] App Router: Yes
@@ -240,11 +249,12 @@
 
 ## Key References
 
-| Resource                | URL                                      |
-| ----------------------- | ---------------------------------------- |
-| Sui Move Book           | https://move-book.com                    |
-| Sui TypeScript SDK Docs | https://sdk.mystenlabs.com/typescript    |
-| dapp-kit Docs           | https://sdk.mystenlabs.com/dapp-kit      |
-| Sui Testnet Explorer    | https://suiexplorer.com/?network=testnet |
-| Sui Testnet Faucet      | https://faucet.testnet.sui.io            |
-| Vercel Deployment       | https://vercel.com                       |
+| Resource                | URL                                                  |
+| ----------------------- | ---------------------------------------------------- |
+| Sui Move Book           | https://move-book.com                                |
+| Move Code Quality       | https://move-book.com/guides/code-quality-checklist/ |
+| Sui TypeScript SDK Docs | https://sdk.mystenlabs.com/typescript                |
+| dapp-kit Docs           | https://sdk.mystenlabs.com/dapp-kit                  |
+| Sui Testnet Explorer    | https://suiexplorer.com/?network=testnet             |
+| Sui Testnet Faucet      | https://faucet.testnet.sui.io                        |
+| Vercel Deployment       | https://vercel.com                                   |
