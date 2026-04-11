@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "move-code-quality": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "0ac79583d2c4721c007e7e51ba84599d9c1056d54ed10ab427b1b0add5618b5e"
+    }
+  }
+}
