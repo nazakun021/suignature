@@ -9,7 +9,7 @@
 Antigravity Kit is a modular system consisting of:
 
 - **20 Specialist Agents** - Role-based AI personas
-- **36 Skills** - Domain-specific knowledge modules
+- **38 Skills** - Domain-specific knowledge modules
 - **11 Workflows** - Slash command procedures
 
 ---
@@ -20,7 +20,7 @@ Antigravity Kit is a modular system consisting of:
 .agent/
 ├── ARCHITECTURE.md          # This file
 ├── agents/                  # 20 Specialist Agents
-├── skills/                  # 36 Skills
+├── skills/                  # 38 Skills
 ├── workflows/               # 11 Slash Commands
 ├── rules/                   # Global Rules
 └── scripts/                 # Master Validation Scripts
@@ -57,7 +57,7 @@ Specialist AI personas for different domains.
 
 ---
 
-## 🧩 Skills (36)
+## 🧩 Skills (38)
 
 Modular knowledge domains that agents can load on-demand. based on task context.
 
@@ -79,6 +79,7 @@ Modular knowledge domains that agents can load on-demand. based on task context.
 | `nestjs-expert`         | NestJS modules, DI, decorators |
 | `nodejs-best-practices` | Node.js async, modules         |
 | `python-patterns`       | Python standards, FastAPI      |
+| `rust-pro`              | High-performance Rust systems  |
 
 ### Database
 
@@ -139,6 +140,12 @@ Modular knowledge domains that agents can load on-demand. based on task context.
 | ------------------ | --------------------- |
 | `game-development` | Game logic, mechanics |
 
+### Blockchain (NEW)
+
+| Skill               | Description                                   |
+| ------------------- | --------------------------------------------- |
+| `move-code-quality` | Sui Move 2024 standards, soulbound enforcement |
+
 ### SEO & Growth
 
 | Skill              | Description                   |
@@ -165,6 +172,7 @@ Modular knowledge domains that agents can load on-demand. based on task context.
 | `i18n-localization`       | Internationalization      |
 | `performance-profiling`   | Web Vitals, optimization  |
 | `systematic-debugging`    | Troubleshooting           |
+| `intelligent-routing`     | Autonomous agent selection|
 
 ---
 
@@ -267,7 +275,7 @@ For details, see [scripts/README.md](scripts/README.md)
 | Metric              | Value                         |
 | ------------------- | ----------------------------- |
 | **Total Agents**    | 20                            |
-| **Total Skills**    | 36                            |
+| **Total Skills**    | 38                            |
 | **Total Workflows** | 11                            |
 | **Total Scripts**   | 2 (master) + 18 (skill-level) |
 | **Coverage**        | ~90% web/mobile development   |
