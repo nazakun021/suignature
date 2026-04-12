@@ -222,23 +222,23 @@
 
 ### D1. Vercel Setup
 
-- [ ] Push project to GitHub (`git init`, `git remote add origin`, `git push`)
-- [ ] Connect GitHub repo to Vercel
-- [ ] Add all `.env.local` variables to Vercel Environment Variables:
-  - [ ] `NEXT_PUBLIC_PACKAGE_ID`
-  - [ ] `NEXT_PUBLIC_MODULE_NAME`
-  - [ ] `NEXT_PUBLIC_FUNCTION_NAME`
-  - [ ] `NEXT_PUBLIC_SUI_NETWORK`
-- [ ] Trigger first deploy
-- [ ] Confirm live URL resolves
-- [ ] Test full issuer flow on the live Vercel URL (not localhost)
-- [ ] Test `/verify/[objectId]` on live URL with a real credential
-- [ ] Confirm QR code on live certificate links to the Vercel domain (not localhost)
-- [ ] Copy the live Vercel URL — this goes in the demo
+- [x] Push project to GitHub (`git init`, `git remote add origin`, `git push`)
+- [x] Connect GitHub repo to Vercel
+- [x] Add all `.env.local` variables to Vercel Environment Variables:
+  - [x] `NEXT_PUBLIC_PACKAGE_ID`
+  - [x] `NEXT_PUBLIC_MODULE_NAME`
+  - [x] `NEXT_PUBLIC_FUNCTION_NAME`
+  - [x] `NEXT_PUBLIC_SUI_NETWORK`
+- [x] Trigger first deploy
+- [x] Confirm live URL resolves
+- [x] Test full issuer flow on the live Vercel URL (not localhost)
+- [x] Test `/verify/[objectId]` on live URL with a real credential
+- [x] Confirm QR code on live certificate links to the Vercel domain (not localhost)
+- [x] Copy the live Vercel URL — this goes in the demo
 
 ---
 
-## PHASE E — Demo Preparation
+## PHASE E — Demo Preparation 🔄 IN PROGRESS
 
 ### E1. End-to-End Run-Through
 
@@ -316,5 +316,5 @@ Function Name:     issue_credential
 Network:           testnet
 Deployer Address:  0x392902a8eaf1438139238e73ac4effe9246187b0b6d7d4efc5cfcecaded59420
 Test Object ID:    0xd553c291d4a9cd41f8afe531a68a4a7163d00ce556602c92fee925c5f9f2b43c
-Live Vercel URL:   (fill in after Phase D)
+Live Vercel URL:   https://suignature.vercel.app/
 ```
