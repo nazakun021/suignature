@@ -16,3 +16,29 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* ── Print styles ──────────────────────────────────────────────────────────── */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #certificate-card,
+  #certificate-card * {
+    visibility: visible;
+  }
+
+  #certificate-card {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    margin: 0;
+    box-shadow: none;
+    border: 1px solid #e5e7eb;
+  }
+
+  @page {
+    margin: 1cm;
+  }
+}

@@ -2,11 +2,11 @@
 
 > **Hackathon deadline:** Sunday April 12, 2026 @ 4:00 PM
 > **Demo window:** ~3 minutes, live on Sui Testnet
-> **Stack:** Sui Move · Next.js · React · @mysten/dapp-kit · @mysten/sui.js · Vercel
+> **Stack:** Sui Move · Next.js · React · @mysten/dapp-kit · @mysten/sui · Vercel
 
 ---
 
-## PHASE A — Sui Move Smart Contract
+## PHASE A — Sui Move Smart Contract ✅ COMPLETE
 
 ### A1. Project Setup
 
@@ -62,28 +62,22 @@
 
 - [x] Build the package (`sui move build` — succeeds with no errors)
 - [x] Publish to Testnet (`sui client publish --gas-budget 50000000`)
-- [x] **SAVE the Package ID from the output** → `0x8200046ee3637af5aaf00411789e04770914a3bcf73fb24f0a3ccccf6a8425ed`
-- [x] **SAVE the Module name** → `credential`
+- [x] **Package ID:** `0x8200046ee3637af5aaf00411789e04770914a3bcf73fb24f0a3ccccf6a8425ed`
+- [x] **Module name:** `credential`
 - [x] Verify the published package on Sui Testnet Explorer
-- [x] Do a manual test transaction from CLI to confirm `issue_credential` works end-to-end
+- [x] Manual test transaction from CLI confirms `issue_credential` works end-to-end
 
 ---
 
-## PHASE B — Issuer Frontend (Next.js + React)
+## PHASE B — Issuer Frontend (Next.js + React) ✅ COMPLETE
 
 ### B1. Project Setup
 
 - [x] Scaffold Next.js app (`npx create-next-app@latest frontend`)
-  - [x] TypeScript: Yes
-  - [x] Tailwind CSS: Yes
-  - [x] App Router: Yes
+  - [x] TypeScript: Yes / Tailwind CSS: Yes / App Router: Yes
 - [x] Install Sui SDK dependencies:
   - [x] `npm install @mysten/dapp-kit @mysten/sui @tanstack/react-query`
-- [x] Create `.env.local` with:
-  - [x] `NEXT_PUBLIC_PACKAGE_ID=<your_package_id>`
-  - [x] `NEXT_PUBLIC_MODULE_NAME=credential`
-  - [x] `NEXT_PUBLIC_FUNCTION_NAME=issue_credential`
-  - [x] `NEXT_PUBLIC_SUI_NETWORK=testnet`
+- [x] Create `.env.local` with all required variables
 - [x] Add `.env.local` to `.gitignore`
 - [x] Confirm dev server runs (`npm run dev`)
 
@@ -100,76 +94,127 @@
 
 - [x] Create `app/page.tsx` as the Issuer Dashboard
 - [x] Add `ConnectButton` from `@mysten/dapp-kit` in the header
-- [x] Gate the form behind wallet connection (show "Connect wallet to issue credentials" if not connected)
-- [x] Build the credential form with controlled inputs:
-  - [x] Volunteer Wallet Address (text input)
-  - [x] Volunteer Full Name (text input)
-  - [x] Project or Event Name (text input)
-  - [x] Issuer / Organization Name (text input)
-  - [x] Skills Verified (multi-select dropdown with predefined tags)
+- [x] Gate the form behind wallet connection
+- [x] Build the credential form with all controlled inputs
 - [x] Add form validation (no empty fields, valid Sui address format)
-- [x] Build the `handleSubmit` function:
-  - [x] Construct a `Transaction` using recent @mysten/sui APIs
-  - [x] Call `moveCall` with package ID, module, function, and typed args
-  - [x] Use `useSignAndExecuteTransaction` hook
-  - [x] Use `suiClient.waitForTransaction` to handle indexing guarantees
-  - [x] On success: extract exact created objectId
-  - [x] On error: show readable error message
+- [x] Build the `handleSubmit` function with `Transaction` + `useSignAndExecuteTransaction`
+- [x] Use `suiClient.waitForTransaction` for indexing guarantee
 - [x] Show loading state while transaction is pending
-- [x] On success, display:
-  - [x] "Credential issued successfully!"
-  - [x] The Object ID of the new credential (linking to suiscan.xyz)
-  - [x] The full `/verify/[objectId]` URL (copyable)
+- [x] On success: extract Object ID and display shareable verify URL
 
-### B4. UI Polish (Issuer Page)
+### B4. UI Polish
 
 - [x] Clean, minimal layout — no crypto jargon visible
-- [x] Professional color scheme (dark mode, styling handled consistently)
-- [x] Responsive layout (works on laptop screen for demo)
+- [x] Professional dark mode color scheme
+- [x] Responsive layout
 - [x] Disabled submit button while transaction is pending
 
 ---
 
-## PHASE C — Recruiter Verify Page
+## PHASE C — Recruiter Verify Page ✅ COMPLETE
 
-### C1. Route Setup
+### C1. Dependency Setup
 
-- [ ] Create `app/verify/[objectId]/page.tsx`
-- [ ] Accept `objectId` from route params
+- [x] Install QR code library: `npm install qrcode.react`
+- [x] Install types: `npm install --save-dev @types/qrcode`
 
-### C2. On-Chain Data Fetching
+### C2. Data Layer
 
-- [ ] Use `@mysten/sui.js` `SuiClient` to call `getObject`
-- [ ] Pass `objectId` from URL param
-- [ ] Request `showContent: true` in options to get fields
-- [ ] Handle loading state
-- [ ] Handle error state (invalid ID, object not found)
-- [ ] Parse the returned object fields into typed variables:
-  - [ ] `volunteer_name`
-  - [ ] `project_or_event`
-  - [ ] `skills_verified` (array)
-  - [ ] `issuer_name`
-  - [ ] `timestamp` (convert ms to readable date)
+- [x] Create `lib/credential.ts`:
+  - [x] Define `CredentialData` TypeScript interface with all fields
+  - [x] Write `fetchCredential(objectId)` async function using `suiClient.getObject`
+  - [x] Pass `showContent: true` and `showOwner: true` in options
+  - [x] Type-guard object as `::credential::Credential` — reject other object types
+  - [x] Parse `issuer_address` field
+  - [x] Parse `owner` field as `AddressOwner` → `ownerAddress`
+  - [x] Parse `timestamp` (u64 ms) into JS `Date` object
+  - [x] Handle `CREDENTIAL_NOT_FOUND` error
+  - [x] Handle `NOT_A_CREDENTIAL` error
+  - [x] Handle `INVALID_OBJECT_TYPE` error
+  - [x] Write `formatIssuedDate(date)` helper → human-readable string
+  - [x] Write `shortenAddress(address)` helper → `0x1234...5678`
+  - [x] Write `explorerUrl(objectId)` → suiscan.xyz object URL
+  - [x] Write `addressExplorerUrl(address)` → suiscan.xyz account URL
 
-### C3. Certificate UI
+### C3. Components
 
-- [ ] Design a clean, professional certificate card:
-  - [ ] Title: "Verified Proof of Work"
-  - [ ] Issued to: [Volunteer Name]
-  - [ ] Issued by: [Issuer Name]
-  - [ ] Project / Event: [Project Name]
-  - [ ] Skills Verified: [Skill tags as badges]
-  - [ ] Date: [Human-readable timestamp]
-  - [ ] Footer: "This credential is cryptographically verified on the Sui blockchain."
-- [ ] **Zero crypto jargon** — no mentions of "hashes", "gas", "Move", "object ID" in the visible UI
-- [ ] Add a subtle "Verified on Sui" badge/logo for credibility
-- [ ] Add a "View on Sui Explorer" link (hidden or small — for technical users)
+- [x] Create `components/SkillBadge.tsx`:
+  - [x] Renders a single skill as an indigo pill badge
+  - [x] No props other than `skill: string`
 
-### C4. UI Polish (Verify Page)
+- [x] Create `components/CertificateQR.tsx`:
+  - [x] Use `QRCodeSVG` from `qrcode.react`
+  - [x] QR value = `window.location.origin + /verify/ + objectId`
+  - [x] URL assigned inside `useEffect` (client-side only — avoids SSR hydration error)
+  - [x] Returns `null` until URL is set
+  - [x] White background, indigo foreground, 96px size, level "M"
+  - [x] Wrapped in white rounded card with caption: "Scan to verify this credential"
 
-- [ ] Page should look like something you'd proudly share with an employer
-- [ ] Works cleanly when printed or screenshotted
-- [ ] Mobile-readable (recruiter might open link on phone)
+- [x] Create `components/VerificationTrail.tsx`:
+  - [x] Step 1 — Issued By: issuerName + shortened issuerAddress (links to suiscan)
+  - [x] Step 2 — Issued To: volunteerName + shortened ownerAddress (links to suiscan)
+  - [x] Step 3 — Date & Time: full timestamp with timezone
+  - [x] Description text under each step (Web2-friendly, no jargon)
+  - [x] Footer: "View original blockchain record" link → suiscan object URL
+  - [x] Entire component uses light mode styling (bg-gray-50, borders)
+
+- [x] Create `components/CertificateCard.tsx`:
+  - [x] Top accent gradient bar (indigo → violet)
+  - [x] Header: "Certificate of Verified Work" label + "suignature" title + green "Verified" badge
+  - [x] Two-column layout: credential details (left) + QR code (right)
+  - [x] "This certifies that [volunteerName]" — large, prominent
+  - [x] "Demonstrated verified contributions to [projectOrEvent]"
+  - [x] "Verified and issued by [issuerName]"
+  - [x] "Date of issuance [formatted date]"
+  - [x] Skills section: all `skillsVerified` as `SkillBadge` components
+  - [x] Certificate footer: trust statement + "Verified on Sui" badge
+  - [x] Element has `id="certificate-card"` for print targeting
+  - [x] Light mode (white background) — prints cleanly
+
+- [x] Create `components/VerifyPageClient.tsx`:
+  - [x] `'use client'` component
+  - [x] Fetches credential via `fetchCredential` in `useEffect`
+  - [x] Manages `LoadState`: `loading | success | not_found | invalid | error`
+  - [x] `LoadingState`: spinner + "Retrieving credential..." text
+  - [x] `NotFoundState`: SVG icon + plain English message + objectId displayed
+  - [x] `InvalidState`: SVG icon + plain English message
+  - [x] `ErrorState`: SVG icon + technical message for debugging
+  - [x] `SuccessState`:
+    - [x] `CertificateCard` component
+    - [x] `VerificationTrail` component
+    - [x] "Why can you trust this credential?" explainer callout
+    - [x] `ShareButton`: copies verify URL, shows "✓ Link Copied" feedback
+    - [x] `PrintButton`: triggers `window.print()`
+  - [x] Header: no wallet connect — purely public page
+  - [x] Light mode UI throughout (bg-gray-50 base)
+
+### C4. Route Setup
+
+- [x] Create `app/verify/[objectId]/page.tsx` (Server Component):
+  - [x] Accepts `params: Promise<{ objectId: string }>` (Next.js 15+ async params)
+  - [x] Exports `generateMetadata` for page title + Open Graph tags
+  - [x] Renders `<VerifyPageClient objectId={params.objectId} />`
+
+### C5. Print Support
+
+- [x] Add `@media print` block to `app/globals.css`:
+  - [x] Hide all elements except `#certificate-card`
+  - [x] Position certificate at top of page
+  - [x] Remove box-shadow on print
+  - [x] Set `@page { margin: 1cm }`
+
+### C6. End-to-End Test
+
+- [x] Use a real Object ID from a Phase B test mint
+- [x] Confirm all credential fields render correctly
+- [x] Confirm QR code scans and links back to the same verify page
+- [x] Confirm verification trail shows correct issuer + recipient info
+- [x] Confirm "View blockchain record" link opens suiscan.xyz correctly
+- [x] Confirm "Copy Verification Link" copies the correct URL
+- [x] Test print output — only certificate card should print
+- [x] Test on mobile (phone screen) — must be fully readable
+- [x] Test with an invalid/random object ID — error state renders
+- [x] Run `npm run build` — passes with zero TypeScript errors
 
 ---
 
@@ -179,11 +224,17 @@
 
 - [ ] Push project to GitHub (`git init`, `git remote add origin`, `git push`)
 - [ ] Connect GitHub repo to Vercel
-- [ ] Add all `.env.local` variables to Vercel Environment Variables
+- [ ] Add all `.env.local` variables to Vercel Environment Variables:
+  - [ ] `NEXT_PUBLIC_PACKAGE_ID`
+  - [ ] `NEXT_PUBLIC_MODULE_NAME`
+  - [ ] `NEXT_PUBLIC_FUNCTION_NAME`
+  - [ ] `NEXT_PUBLIC_SUI_NETWORK`
 - [ ] Trigger first deploy
-- [ ] Confirm live URL works
-- [ ] Test full issuer → verify flow on the live Vercel URL (not localhost)
-- [ ] Copy the live Vercel URL — this is what goes in the demo
+- [ ] Confirm live URL resolves
+- [ ] Test full issuer flow on the live Vercel URL (not localhost)
+- [ ] Test `/verify/[objectId]` on live URL with a real credential
+- [ ] Confirm QR code on live certificate links to the Vercel domain (not localhost)
+- [ ] Copy the live Vercel URL — this goes in the demo
 
 ---
 
@@ -192,43 +243,46 @@
 ### E1. End-to-End Run-Through
 
 - [ ] Connect Slush wallet on live Vercel URL
-- [ ] Fill out form with realistic dummy data:
-  - [ ] Volunteer: your own name
+- [ ] Fill out form with realistic demo data:
+  - [ ] Volunteer: your own name + your own wallet address
   - [ ] Event: "Sui Builders Program Davao"
   - [ ] Skills: "Smart Contract Development", "Public Speaking"
   - [ ] Issuer: "YGG Pilipinas / Metaversity"
 - [ ] Submit → confirm transaction on Testnet
 - [ ] Navigate to `/verify/[objectId]`
-- [ ] Screenshot the certificate — use as a backup if live demo fails
-- [ ] Test the URL on a different device (phone or someone else's laptop)
+- [ ] Screenshot the certificate — use as backup if live demo fails
+- [ ] Scan the QR code with your phone to confirm it works
+- [ ] Test the URL on a second device (phone or someone else's laptop)
 
 ### E2. Pitch Preparation
 
 - [ ] Write your 3-minute demo script:
-  - [ ] 30s — Problem (the 6-second recruiter screen)
+  - [ ] 30s — Problem (the 6-second recruiter screen, grassroots talent invisible to employers)
   - [ ] 30s — Solution overview (SBT, non-transferable, issuer → volunteer → recruiter)
-  - [ ] 60s — Live demo (issue → verify URL)
-  - [ ] 30s — Why Sui (non-transferability enforced at protocol level)
+  - [ ] 60s — Live demo (issue → verify URL → show certificate + QR + verification trail)
+  - [ ] 30s — Why Sui (non-transferability enforced at protocol level, not policy)
   - [ ] 30s — Roadmap (zkLogin, Sponsored Transactions, bulk issuance)
 - [ ] Prepare a fallback: screenshot of working certificate in case of network issues
-- [ ] Know your rubric:
-  - [ ] Can explain the `store` ability omission clearly
-  - [ ] Can explain why zkLogin solves adoption
-  - [ ] Can explain the recruiter UX decision
+- [ ] Know your rubric answers:
+  - [ ] Can explain the `store` ability omission: "physically impossible to transfer at VM level"
+  - [ ] Can explain the QR code value: "the URL encodes the object ID — scanning it is verification"
+  - [ ] Can explain the verification trail: "cryptographic chain from issuer to recipient"
+  - [ ] Can explain why zkLogin solves adoption: "volunteers use Google login, no seed phrases"
+  - [ ] Can explain the recruiter UX decision: "zero crypto jargon — for someone who has never heard of blockchain"
 
 ---
 
 ## STRETCH GOALS (Only if everything above is done early)
 
-- [ ] Add a "Copy Link" button on the issuer success screen
 - [ ] Add a "Share on LinkedIn" button on the verify page
-- [ ] Add a simple homepage explaining the product (for judges browsing the URL)
-- [ ] Add multiple credentials per wallet (list view on `/profile/[address]`)
-- [ ] Add QR code generation on the verify page
+- [ ] Add a landing page at `/` explaining the product to visitors
+- [ ] Add a `/profile/[address]` page listing all credentials owned by a wallet
+- [ ] Add animated entrance on certificate load (Framer Motion)
+- [ ] Add a QR code download button ("Save QR as PNG")
 
 ---
 
-## HARD STOPS — Do NOT touch these unless MVP is fully working
+## HARD STOPS — Do NOT touch these unless full MVP is working
 
 - [ ] ~~zkLogin integration~~
 - [ ] ~~Sponsored transactions~~
@@ -240,12 +294,27 @@
 
 ## Key References
 
-| Resource                | URL                                                  |
-| ----------------------- | ---------------------------------------------------- |
-| Sui Move Book           | https://move-book.com                                |
-| Move Code Quality       | https://move-book.com/guides/code-quality-checklist/ |
-| Sui TypeScript SDK Docs | https://sdk.mystenlabs.com/typescript                |
-| dapp-kit Docs           | https://sdk.mystenlabs.com/dapp-kit                  |
-| Sui Testnet Explorer    | https://suiexplorer.com/?network=testnet             |
-| Sui Testnet Faucet      | https://faucet.testnet.sui.io                        |
-| Vercel Deployment       | https://vercel.com                                   |
+| Resource                 | URL                                                  |
+| ------------------------ | ---------------------------------------------------- |
+| Sui Move Book            | https://move-book.com                                |
+| Move Code Quality        | https://move-book.com/guides/code-quality-checklist/ |
+| Sui TypeScript SDK Docs  | https://sdk.mystenlabs.com/typescript                |
+| dapp-kit Docs            | https://sdk.mystenlabs.com/dapp-kit                  |
+| Suiscan Testnet Explorer | https://suiscan.xyz/testnet                          |
+| Sui Testnet Faucet       | https://faucet.testnet.sui.io                        |
+| qrcode.react Docs        | https://github.com/zpao/qrcode.react                 |
+| Vercel Deployment        | https://vercel.com                                   |
+
+---
+
+## Key Numbers
+
+```
+Package ID:        0x8200046ee3637af5aaf00411789e04770914a3bcf73fb24f0a3ccccf6a8425ed
+Module Name:       credential
+Function Name:     issue_credential
+Network:           testnet
+Deployer Address:  0x392902a8eaf1438139238e73ac4effe9246187b0b6d7d4efc5cfcecaded59420
+Test Object ID:    0xd553c291d4a9cd41f8afe531a68a4a7163d00ce556602c92fee925c5f9f2b43c
+Live Vercel URL:   (fill in after Phase D)
+```
