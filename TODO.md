@@ -73,69 +73,60 @@
 
 ### B1. Project Setup
 
-- [ ] Scaffold Next.js app (`npx create-next-app@latest suignature-frontend`)
-  - [ ] TypeScript: Yes
-  - [ ] Tailwind CSS: Yes
-  - [ ] App Router: Yes
-- [ ] Install Sui SDK dependencies:
-  - [ ] `npm install @mysten/dapp-kit @mysten/sui.js @tanstack/react-query`
-- [ ] Create `.env.local` with:
-  - [ ] `NEXT_PUBLIC_PACKAGE_ID=<your_package_id>`
-  - [ ] `NEXT_PUBLIC_MODULE_NAME=credential`
-  - [ ] `NEXT_PUBLIC_FUNCTION_NAME=issue_credential`
-  - [ ] `NEXT_PUBLIC_SUI_NETWORK=testnet`
-- [ ] Add `.env.local` to `.gitignore`
-- [ ] Confirm dev server runs (`npm run dev`)
+- [x] Scaffold Next.js app (`npx create-next-app@latest frontend`)
+  - [x] TypeScript: Yes
+  - [x] Tailwind CSS: Yes
+  - [x] App Router: Yes
+- [x] Install Sui SDK dependencies:
+  - [x] `npm install @mysten/dapp-kit @mysten/sui @tanstack/react-query`
+- [x] Create `.env.local` with:
+  - [x] `NEXT_PUBLIC_PACKAGE_ID=<your_package_id>`
+  - [x] `NEXT_PUBLIC_MODULE_NAME=credential`
+  - [x] `NEXT_PUBLIC_FUNCTION_NAME=issue_credential`
+  - [x] `NEXT_PUBLIC_SUI_NETWORK=testnet`
+- [x] Add `.env.local` to `.gitignore`
+- [x] Confirm dev server runs (`npm run dev`)
 
 ### B2. Wallet Provider Setup
 
-- [ ] Wrap `_app.tsx` (or `layout.tsx`) with:
-  - [ ] `QueryClientProvider` from `@tanstack/react-query`
-  - [ ] `SuiClientProvider` from `@mysten/dapp-kit` pointed at Testnet
-  - [ ] `WalletProvider` from `@mysten/dapp-kit`
-- [ ] Import and apply `@mysten/dapp-kit/dist/index.css`
-- [ ] Confirm wallet provider renders without errors
+- [x] Wrap client with React context providers (`app/providers.tsx`):
+  - [x] `QueryClientProvider` from `@tanstack/react-query`
+  - [x] `SuiClientProvider` from `@mysten/dapp-kit` pointed at Testnet
+  - [x] `WalletProvider` from `@mysten/dapp-kit`
+- [x] Import and apply `@mysten/dapp-kit/dist/index.css`
+- [x] Confirm wallet provider renders without errors
 
 ### B3. Issuer Page (`/` — Homepage)
 
-- [ ] Create `app/page.tsx` as the Issuer Dashboard
-- [ ] Add `ConnectButton` from `@mysten/dapp-kit` in the header
-- [ ] Gate the form behind wallet connection (show "Connect wallet to issue credentials" if not connected)
-- [ ] Build the credential form with controlled inputs:
-  - [ ] Volunteer Wallet Address (text input)
-  - [ ] Volunteer Full Name (text input)
-  - [ ] Project or Event Name (text input)
-  - [ ] Issuer / Organization Name (text input)
-  - [ ] Skills Verified (multi-select dropdown with predefined tags):
-    - [ ] Event Logistics
-    - [ ] Technical Mentoring
-    - [ ] Community Management
-    - [ ] Frontend Development
-    - [ ] Smart Contract Development
-    - [ ] B2B Negotiation
-    - [ ] Content Creation
-    - [ ] Project Management
-    - [ ] Public Speaking
-    - [ ] UI/UX Design
-- [ ] Add form validation (no empty fields, valid Sui address format)
-- [ ] Build the `handleSubmit` function:
-  - [ ] Construct a `TransactionBlock`
-  - [ ] Call `moveCall` with package ID, module, function, and args
-  - [ ] Use `useSignAndExecuteTransactionBlock` hook
-  - [ ] On success: show transaction digest + generate verify link
-  - [ ] On error: show readable error message
-- [ ] Show loading state while transaction is pending
-- [ ] On success, display:
-  - [ ] "Credential issued successfully!"
-  - [ ] The Object ID of the new credential
-  - [ ] The full `/verify/[objectId]` URL (copyable)
+- [x] Create `app/page.tsx` as the Issuer Dashboard
+- [x] Add `ConnectButton` from `@mysten/dapp-kit` in the header
+- [x] Gate the form behind wallet connection (show "Connect wallet to issue credentials" if not connected)
+- [x] Build the credential form with controlled inputs:
+  - [x] Volunteer Wallet Address (text input)
+  - [x] Volunteer Full Name (text input)
+  - [x] Project or Event Name (text input)
+  - [x] Issuer / Organization Name (text input)
+  - [x] Skills Verified (multi-select dropdown with predefined tags)
+- [x] Add form validation (no empty fields, valid Sui address format)
+- [x] Build the `handleSubmit` function:
+  - [x] Construct a `Transaction` using recent @mysten/sui APIs
+  - [x] Call `moveCall` with package ID, module, function, and typed args
+  - [x] Use `useSignAndExecuteTransaction` hook
+  - [x] Use `suiClient.waitForTransaction` to handle indexing guarantees
+  - [x] On success: extract exact created objectId
+  - [x] On error: show readable error message
+- [x] Show loading state while transaction is pending
+- [x] On success, display:
+  - [x] "Credential issued successfully!"
+  - [x] The Object ID of the new credential (linking to suiscan.xyz)
+  - [x] The full `/verify/[objectId]` URL (copyable)
 
 ### B4. UI Polish (Issuer Page)
 
-- [ ] Clean, minimal layout — no crypto jargon visible
-- [ ] Professional color scheme (dark or light, consistent)
-- [ ] Responsive layout (works on laptop screen for demo)
-- [ ] Disabled submit button while transaction is pending
+- [x] Clean, minimal layout — no crypto jargon visible
+- [x] Professional color scheme (dark mode, styling handled consistently)
+- [x] Responsive layout (works on laptop screen for demo)
+- [x] Disabled submit button while transaction is pending
 
 ---
 

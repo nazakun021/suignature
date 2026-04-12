@@ -1,4 +1,5 @@
 # Phase B — Issuer Frontend Specification
+
 ### suignature | Next.js + React + @mysten/dapp-kit
 
 ---
@@ -59,6 +60,7 @@ npx create-next-app@latest frontend
 ```
 
 When prompted, select:
+
 ```
 ✔ Would you like to use TypeScript?          → Yes
 ✔ Would you like to use ESLint?              → Yes
@@ -72,14 +74,14 @@ When prompted, select:
 
 ```bash
 cd frontend
-npm install @mysten/dapp-kit @mysten/sui.js @tanstack/react-query
+npm install @mysten/dapp-kit @mysten/sui @tanstack/react-query
 ```
 
-| Package | Version | Purpose |
-|---|---|---|
-| `@mysten/dapp-kit` | latest | Wallet connection, transaction hooks, React context |
-| `@mysten/sui.js` | latest | SuiClient for reading on-chain objects |
-| `@tanstack/react-query` | latest | Required peer dependency of dapp-kit |
+| Package                 | Version | Purpose                                                 |
+| ----------------------- | ------- | ------------------------------------------------------- |
+| `@mysten/dapp-kit`      | latest  | Wallet connection, transaction hooks, React context     |
+| `@mysten/sui`           | latest  | Sui library (v2 API) for data fetching and transactions |
+| `@tanstack/react-query` | latest  | Required peer dependency of dapp-kit                    |
 
 ### Environment Variables
 
@@ -122,28 +124,28 @@ export const SUI_CONFIG = {
   packageId: process.env.NEXT_PUBLIC_PACKAGE_ID as string,
   moduleName: process.env.NEXT_PUBLIC_MODULE_NAME as string,
   functionName: process.env.NEXT_PUBLIC_FUNCTION_NAME as string,
-  network: (process.env.NEXT_PUBLIC_SUI_NETWORK as string) || 'testnet',
+  network: (process.env.NEXT_PUBLIC_SUI_NETWORK as string) || "testnet",
 } as const;
 
 export const SKILL_TAGS = [
-  'Event Logistics',
-  'Technical Mentoring',
-  'Community Management',
-  'Frontend Development',
-  'Smart Contract Development',
-  'Backend Development',
-  'B2B Negotiation',
-  'Content Creation',
-  'Project Management',
-  'Public Speaking',
-  'UI/UX Design',
-  'Social Media Marketing',
-  'Workshop Facilitation',
-  'Graphic Design',
-  'Data Analysis',
+  "Event Logistics",
+  "Technical Mentoring",
+  "Community Management",
+  "Frontend Development",
+  "Smart Contract Development",
+  "Backend Development",
+  "B2B Negotiation",
+  "Content Creation",
+  "Project Management",
+  "Public Speaking",
+  "UI/UX Design",
+  "Social Media Marketing",
+  "Workshop Facilitation",
+  "Graphic Design",
+  "Data Analysis",
 ] as const;
 
-export type SkillTag = typeof SKILL_TAGS[number];
+export type SkillTag = (typeof SKILL_TAGS)[number];
 
 // Validation
 export const SUI_ADDRESS_REGEX = /^0x[a-fA-F0-9]{64}$/;
@@ -156,12 +158,12 @@ A singleton `SuiClient` used for reading on-chain data in Phase C. Define it her
 ```typescript
 // lib/sui.ts
 
-import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
+import { SuiJsonRpcClient, getJsonRpcFullnodeUrl } from "@mysten/sui/jsonRpc";
+import { SUI_CONFIG } from "./constants";
 
-const network = (process.env.NEXT_PUBLIC_SUI_NETWORK as 'testnet' | 'mainnet' | 'devnet') || 'testnet';
-
-export const suiClient = new SuiClient({
-  url: getFullnodeUrl(network),
+export const suiClient = new SuiJsonRpcClient({
+  url: getJsonRpcFullnodeUrl(SUI_CONFIG.network),
+  network: SUI_CONFIG.network,
 });
 ```
 
@@ -178,27 +180,28 @@ The root layout must wrap the entire app with three providers in the correct ord
 'use client';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { SuiClientProvider, WalletProvider } from '@mysten/dapp-kit';
-import { getFullnodeUrl } from '@mysten/sui.js/client';
+import { SuiClientProvider, WalletProvider, createNetworkConfig } from '@mysten/dapp-kit';
+import { getJsonRpcFullnodeUrl } from '@mysten/sui/jsonRpc';
 import '@mysten/dapp-kit/dist/index.css';
 import './globals.css';
+import { useState } from 'react';
 
-const queryClient = new QueryClient();
-
-const networks = {
-  testnet: { url: getFullnodeUrl('testnet') },
-};
+const { networkConfig } = createNetworkConfig({
+  testnet: { url: getJsonRpcFullnodeUrl('testnet'), network: 'testnet' },
+});
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const [queryClient] = useState(() => new QueryClient());
+
   return (
     <html lang="en">
       <body>
         <QueryClientProvider client={queryClient}>
-          <SuiClientProvider networks={networks} defaultNetwork="testnet">
+          <SuiClientProvider networks={networkConfig} defaultNetwork="testnet">
             <WalletProvider autoConnect>
               {children}
             </WalletProvider>
@@ -422,10 +425,10 @@ The core form component. Manages all form state, validation, and transaction exe
 
 ```typescript
 interface FormState {
-  recipientAddress: string;   // Volunteer's wallet address
-  volunteerName: string;      // Volunteer's full name
-  projectOrEvent: string;     // Project or event name
-  issuerName: string;         // Organization name (issuer)
+  recipientAddress: string; // Volunteer's wallet address
+  volunteerName: string; // Volunteer's full name
+  projectOrEvent: string; // Project or event name
+  issuerName: string; // Organization name (issuer)
   skillsVerified: SkillTag[]; // Selected skill tags
 }
 
@@ -440,13 +443,13 @@ interface FormErrors {
 
 #### Validation Rules
 
-| Field | Rule |
-|---|---|
+| Field              | Rule                                                     |
+| ------------------ | -------------------------------------------------------- |
 | `recipientAddress` | Must match `SUI_ADDRESS_REGEX` (`/^0x[a-fA-F0-9]{64}$/`) |
-| `volunteerName` | Must not be empty, min 2 characters |
-| `projectOrEvent` | Must not be empty, min 3 characters |
-| `issuerName` | Must not be empty, min 2 characters |
-| `skillsVerified` | Must have at least 1 skill selected |
+| `volunteerName`    | Must not be empty, min 2 characters                      |
+| `projectOrEvent`   | Must not be empty, min 3 characters                      |
+| `issuerName`       | Must not be empty, min 2 characters                      |
+| `skillsVerified`   | Must have at least 1 skill selected                      |
 
 #### Full Implementation
 
@@ -454,9 +457,9 @@ interface FormErrors {
 // components/CredentialForm.tsx
 'use client';
 
-import { useState } from 'react';
-import { useCurrentAccount, useSignAndExecuteTransactionBlock } from '@mysten/dapp-kit';
-import { TransactionBlock } from '@mysten/sui.js/transactions';
+import { useState, useCallback } from 'react';
+import { useCurrentAccount, useSignAndExecuteTransaction, useSuiClient } from '@mysten/dapp-kit';
+import { Transaction } from '@mysten/sui/transactions';
 import { SUI_CONFIG, SUI_ADDRESS_REGEX, SkillTag } from '@/lib/constants';
 import { SkillSelector } from './SkillSelector';
 import { SuccessCard } from './SuccessCard';
@@ -487,7 +490,8 @@ const INITIAL_FORM: FormState = {
 
 export function CredentialForm() {
   const account = useCurrentAccount();
-  const { mutate: signAndExecute, isPending } = useSignAndExecuteTransactionBlock();
+  const suiClient = useSuiClient();
+  const { mutate: signAndExecute, isPending } = useSignAndExecuteTransaction();
 
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [errors, setErrors] = useState<FormErrors>({});
@@ -527,17 +531,17 @@ export function CredentialForm() {
   };
 
   // ── Transaction builder ───────────────────────────────────────────────────
-  const buildTransaction = (): TransactionBlock => {
-    const tx = new TransactionBlock();
+  const buildTransaction = (): Transaction => {
+    const tx = new Transaction();
 
     tx.moveCall({
       target: `${SUI_CONFIG.packageId}::${SUI_CONFIG.moduleName}::${SUI_CONFIG.functionName}`,
       arguments: [
-        tx.pure(form.volunteerName.trim()),
-        tx.pure(form.projectOrEvent.trim()),
-        tx.pure(form.skillsVerified),
-        tx.pure(form.issuerName.trim()),
-        tx.pure(form.recipientAddress),
+        tx.pure.string(form.volunteerName.trim()),
+        tx.pure.string(form.projectOrEvent.trim()),
+        tx.pure('vector<string>', form.skillsVerified.map(s => s)),
+        tx.pure.string(form.issuerName.trim()),
+        tx.pure.address(form.recipientAddress),
       ],
     });
 
@@ -545,7 +549,7 @@ export function CredentialForm() {
   };
 
   // ── Submit handler ────────────────────────────────────────────────────────
-  const handleSubmit = () => {
+  const handleSubmit = useCallback(() => {
     if (!account) return;
     if (!validate()) return;
 
@@ -553,32 +557,22 @@ export function CredentialForm() {
     const tx = buildTransaction();
 
     signAndExecute(
+      { transaction: tx },
       {
-        transactionBlock: tx,
-        options: {
-          showObjectChanges: true,
-          showEffects: true,
-        },
-      },
-      {
-        onSuccess: (result) => {
+        onSuccess: async (result) => {
+          // Wait for transaction to be indexed
+          const txResponse = await suiClient.waitForTransaction({
+            digest: result.digest,
+            options: { showObjectChanges: true },
+          });
+
           // Extract the created object ID from the transaction result
-          const createdObject = result.objectChanges?.find(
+          const createdObject = txResponse.objectChanges?.find(
             (change) => change.type === 'created'
           );
 
           if (createdObject && 'objectId' in createdObject) {
             setSuccessObjectId(createdObject.objectId);
-          } else {
-            // Fallback: try to find object ID from effects
-            const effectsCreated = result.effects?.created?.[0];
-            if (effectsCreated) {
-              setSuccessObjectId(
-                typeof effectsCreated.reference === 'object'
-                  ? effectsCreated.reference.objectId
-                  : null
-              );
-            }
           }
         },
         onError: (error) => {
@@ -591,7 +585,7 @@ export function CredentialForm() {
         },
       }
     );
-  };
+  }, [account, form, signAndExecute, suiClient]);
 
   // ── Reset handler ─────────────────────────────────────────────────────────
   const handleReset = () => {
@@ -828,38 +822,43 @@ export default function IssuerPage() {
 
 Understanding this section will help you debug and also answer judge questions confidently.
 
-### How `TransactionBlock` Works
+### How `Transaction` Works
 
 ```typescript
-const tx = new TransactionBlock();
+const tx = new Transaction();
 
 tx.moveCall({
   target: `${packageId}::${moduleName}::${functionName}`,
   // target format: "0xPACKAGE_ID::module_name::function_name"
 
   arguments: [
-    tx.pure(volunteerName),       // Maps to: volunteer_name: String
-    tx.pure(projectOrEvent),      // Maps to: project_or_event: String
-    tx.pure(skillsVerified),      // Maps to: skills_verified: vector<String>
-    tx.pure(issuerName),          // Maps to: issuer_name: String
-    tx.pure(recipientAddress),    // Maps to: recipient: address
+    tx.pure.string(volunteerName), // Maps to: volunteer_name: String
+    tx.pure.string(projectOrEvent), // Maps to: project_or_event: String
+    tx.pure("vector<string>", skillsVerified), // Maps to: skills_verified: vector<String>
+    tx.pure.string(issuerName), // Maps to: issuer_name: String
+    tx.pure.address(recipientAddress), // Maps to: recipient: address
     // ctx is NOT passed — Sui runtime injects it automatically
   ],
 });
 ```
 
-**Important:** `tx.pure()` serializes JavaScript values into BCS (Binary Canonical Serialization) format that the Move VM understands. You never manually BCS-encode anything — the SDK handles it.
+**Important:** `tx.pure()` with typed helpers serializes JavaScript values into BCS (Binary Canonical Serialization) format that the Move VM understands. You never manually BCS-encode anything — the SDK handles it.
 
 ### How to Extract the Object ID from the Result
 
-The `signAndExecuteTransactionBlock` result contains an `objectChanges` array. You want the object with `type: 'created'`:
+The `signAndExecuteTransaction` result returns a digest. You should use `waitForTransaction` on the `suiClient` with `showObjectChanges: true` to get the executed changes. You want the object with `type: 'created'`:
 
 ```typescript
-const createdObject = result.objectChanges?.find(
-  (change) => change.type === 'created'
+const txResponse = await suiClient.waitForTransaction({
+  digest: result.digest,
+  options: { showObjectChanges: true },
+});
+
+const createdObject = txResponse.objectChanges?.find(
+  (change) => change.type === "created",
 );
 
-if (createdObject && 'objectId' in createdObject) {
+if (createdObject && "objectId" in createdObject) {
   const objectId = createdObject.objectId;
   // Use this as the verify URL: /verify/${objectId}
 }
@@ -871,17 +870,17 @@ This is the same Object ID that appears in Phase C's URL. It uniquely identifies
 
 ## B7. Common Errors & Fixes
 
-| Error | Cause | Fix |
-|---|---|---|
-| `Cannot read properties of undefined (reading 'packageId')` | `.env.local` not created or `NEXT_PUBLIC_` prefix missing | Check `.env.local` exists and all vars have `NEXT_PUBLIC_` prefix |
-| `WalletProvider is not wrapping this component` | Hooks used outside provider tree | Confirm `layout.tsx` has all three providers in correct order |
-| `Error: Move call failed` | Wrong package ID or function signature mismatch | Double-check `NEXT_PUBLIC_PACKAGE_ID` matches published contract |
-| `Invalid address format` | Volunteer wallet address doesn't match SUI_ADDRESS_REGEX | Ensure address is 66 chars: `0x` + 64 hex chars |
-| `Transaction rejected` | User clicked reject in wallet | Show a friendly error — this is normal user behavior |
-| `TypeError: Cannot read 'objectChanges'` | `showObjectChanges: true` not passed to execute options | Add `options: { showObjectChanges: true }` to `signAndExecute` call |
-| `hydration mismatch` | Server/client render mismatch on wallet state | Add `'use client'` to any component using dapp-kit hooks |
-| Wallet modal doesn't open | dapp-kit CSS not imported | Add `import '@mysten/dapp-kit/dist/index.css'` to `layout.tsx` |
-| `Module not found: @mysten/...` | Dependencies not installed | Run `npm install` from the `frontend/` directory |
+| Error                                                       | Cause                                                     | Fix                                                                 |
+| ----------------------------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------- |
+| `Cannot read properties of undefined (reading 'packageId')` | `.env.local` not created or `NEXT_PUBLIC_` prefix missing | Check `.env.local` exists and all vars have `NEXT_PUBLIC_` prefix   |
+| `WalletProvider is not wrapping this component`             | Hooks used outside provider tree                          | Confirm `layout.tsx` has all three providers in correct order       |
+| `Error: Move call failed`                                   | Wrong package ID or function signature mismatch           | Double-check `NEXT_PUBLIC_PACKAGE_ID` matches published contract    |
+| `Invalid address format`                                    | Volunteer wallet address doesn't match SUI_ADDRESS_REGEX  | Ensure address is 66 chars: `0x` + 64 hex chars                     |
+| `Transaction rejected`                                      | User clicked reject in wallet                             | Show a friendly error — this is normal user behavior                |
+| `TypeError: Cannot read 'objectChanges'`                    | `showObjectChanges: true` not passed to execute options   | Add `options: { showObjectChanges: true }` to `signAndExecute` call |
+| `hydration mismatch`                                        | Server/client render mismatch on wallet state             | Add `'use client'` to any component using dapp-kit hooks            |
+| Wallet modal doesn't open                                   | dapp-kit CSS not imported                                 | Add `import '@mysten/dapp-kit/dist/index.css'` to `layout.tsx`      |
+| `Module not found: @mysten/...`                             | Dependencies not installed                                | Run `npm install` from the `frontend/` directory                    |
 
 ---
 
@@ -890,22 +889,22 @@ This is the same Object ID that appears in Phase C's URL. It uniquely identifies
 Run through this before declaring Phase B done:
 
 ```
-[ ] ConnectButton appears in header on page load
-[ ] Disconnected state shows the "Connect your wallet" screen
-[ ] Connected state shows the form
-[ ] All 5 form fields render correctly
-[ ] Skill tags render and toggle on/off correctly
-[ ] Validation fires on submit with empty fields
-[ ] Invalid Sui address shows correct error message
-[ ] Submit button is disabled while transaction is pending
-[ ] Spinner shows during pending transaction
-[ ] Wallet popup opens when Submit is clicked (connected)
-[ ] Successful transaction shows SuccessCard
-[ ] Verify URL is correct and copyable
-[ ] Copy button works and shows "Copied!" feedback
-[ ] "Issue Another Credential" resets the form
-[ ] Transaction error (rejected) shows readable message
-[ ] Page is usable on a laptop screen at 1280px width
+[x] ConnectButton appears in header on page load
+[x] Disconnected state shows the "Connect your wallet" screen
+[x] Connected state shows the form
+[x] All 5 form fields render correctly
+[x] Skill tags render and toggle on/off correctly
+[x] Validation fires on submit with empty fields
+[x] Invalid Sui address shows correct error message
+[x] Submit button is disabled while transaction is pending
+[x] Spinner shows during pending transaction
+[x] Wallet popup opens when Submit is clicked (connected)
+[x] Successful transaction shows SuccessCard
+[x] Verify URL is correct and copyable
+[x] Copy button works and shows "Copied!" feedback
+[x] "Issue Another Credential" resets the form
+[x] Transaction error (rejected) shows readable message
+[x] Page is usable on a laptop screen at 1280px width
 ```
 
 ---
@@ -913,23 +912,23 @@ Run through this before declaring Phase B done:
 ## Phase B — Completion Checklist
 
 ```
-[ ] Next.js app scaffolded with correct options
-[ ] All dependencies installed
-[ ] .env.local created with correct Package ID
-[ ] .env.example created and committed
-[ ] lib/constants.ts created with SUI_CONFIG and SKILL_TAGS
-[ ] lib/sui.ts created with SuiClient singleton
-[ ] layout.tsx has all three providers in correct order
-[ ] dapp-kit CSS imported in layout.tsx
-[ ] WalletStatus component built and working
-[ ] SkillSelector component built and working
-[ ] SuccessCard component built and working
-[ ] CredentialForm component built with validation
-[ ] Transaction executes and confirms on Sui Testnet
-[ ] Object ID extracted from transaction result
-[ ] Success state shows shareable verify URL
-[ ] All UI checklist items passing
-[ ] npm run build passes with no TypeScript errors
+[x] Next.js app scaffolded with correct options
+[x] All dependencies installed
+[x] .env.local created with correct Package ID
+[x] .env.example created and committed
+[x] lib/constants.ts created with SUI_CONFIG and SKILL_TAGS
+[x] lib/sui.ts created with SuiClient singleton
+[x] layout.tsx has all three providers in correct order
+[x] dapp-kit CSS imported in layout.tsx
+[x] WalletStatus component built and working
+[x] SkillSelector component built and working
+[x] SuccessCard component built and working
+[x] CredentialForm component built with validation
+[x] Transaction executes and confirms on Sui Testnet
+[x] Object ID extracted from transaction result
+[x] Success state shows shareable verify URL
+[x] All UI checklist items passing
+[x] npm run build passes with no TypeScript errors
 ```
 
 **When all boxes are checked, Phase B is done. Move to Phase C.**

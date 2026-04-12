@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+:root {
+  /* Tailwind v4 automatically detects --color-* variables as tokens */
+  --color-background: #030712;
+  --color-foreground: #f9fafb;
+  
+  /* Font and base variables */
+  --spacing-base: 1rem;
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
