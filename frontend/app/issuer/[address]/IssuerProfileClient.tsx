@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { fetchIssuedCredentials, type IssuedCredentialSummary } from '@/lib/fetchIssuedCredentials';
 import { CredentialCard } from '@/components/CredentialCard';
 import { shortenAddress, addressExplorerUrl } from '@/lib/credential';
-import Link from 'next/link';
+import { SiteHeader } from '@/components/SiteHeader';
 
 interface Props {
   address: string;
@@ -23,20 +23,9 @@ export function IssuerProfileClient({ address }: Props) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="text-base font-bold text-gray-900 hover:text-gray-700 transition-colors">
-            suignature
-          </Link>
-          <div className="flex items-center gap-1.5 text-xs text-gray-500">
-            <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-            Live on Sui Testnet
-          </div>
-        </div>
-      </header>
+      <SiteHeader theme="light" />
 
-      <main className="max-w-4xl mx-auto px-4 py-12">
+      <main className="max-w-6xl mx-auto px-4 py-12">
         {/* Profile header */}
         <div className="mb-8">
           <span className="inline-block rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
@@ -88,7 +77,7 @@ export function IssuerProfileClient({ address }: Props) {
 
       {/* Footer */}
       <footer className="border-t border-gray-200 mt-20 bg-white">
-        <div className="max-w-4xl mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-2">
+        <div className="max-w-6xl mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-2">
           <p className="text-xs text-gray-400">suignature · Verifiable Proof of Work</p>
           <p className="text-xs text-gray-400">Built on Sui · Sui Builders Program Davao 2026</p>
         </div>

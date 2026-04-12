@@ -211,7 +211,22 @@
 
 ---
 
-## PHASE 2D — Polish + Discovery 🔮 FUTURE
+## PHASE 3 — Volunteer Dashboard ✅ COMPLETE
+
+> **Goal:** Private dashboard for connected users to manage their earned credentials.
+> Wallet-only, no auth, no database.
+
+- [x] Shared `SiteHeader` component with "My Credentials" link
+- [x] `app/dashboard/page.tsx` with full implementation
+- [x] Unified header/footer across all pages
+- [x] Disconnected state (Connect prompt)
+- [x] Loading/Empty/Success states for connected users
+- [x] "View Public Portfolio ↗" discovery link
+- [x] Zero TypeScript/Build errors
+
+---
+
+## PHASE 4 — Polish + Discovery 🔮 FUTURE
 
 - [ ] SEO: `generateMetadata` for profile pages (done in 2B above)
 - [ ] OpenGraph image generation for certificates

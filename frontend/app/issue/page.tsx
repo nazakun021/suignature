@@ -1,27 +1,15 @@
 'use client';
 
 import { useCurrentAccount } from '@mysten/dapp-kit';
-import { WalletStatus } from '@/components/WalletStatus';
 import { CredentialForm } from '@/components/CredentialForm';
-import Link from 'next/link';
+import { SiteHeader } from '@/components/SiteHeader';
 
 export default function IssuePage() {
   const account = useCurrentAccount();
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
-      {/* Header */}
-      <header className="border-b border-gray-800">
-        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <Link href="/" className="text-lg font-bold text-white hover:text-gray-200 transition-colors">
-              suignature
-            </Link>
-            <p className="text-xs text-gray-500">Verifiable Proof of Work · Sui Testnet</p>
-          </div>
-          <WalletStatus />
-        </div>
-      </header>
+      <SiteHeader theme="dark" />
 
       {/* Main */}
       <main className="max-w-2xl mx-auto px-4 py-10">

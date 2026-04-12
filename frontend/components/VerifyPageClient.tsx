@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { fetchCredential, CredentialData } from '@/lib/credential';
 import { CertificateCard } from './CertificateCard';
 import { VerificationTrail } from './VerificationTrail';
+import { SiteHeader } from './SiteHeader';
 
 type LoadState = 'loading' | 'success' | 'not_found' | 'invalid' | 'error';
 
@@ -46,19 +47,7 @@ export function VerifyPageClient({ objectId }: VerifyPageClientProps) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header — clean, no wallet connection needed */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-base font-bold text-gray-900">suignature</h1>
-            <p className="text-xs text-gray-400">Verified Credentials Platform</p>
-          </div>
-          <div className="flex items-center gap-1.5 text-xs text-gray-500">
-            <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-            Live on Sui Testnet
-          </div>
-        </div>
-      </header>
+      <SiteHeader theme="light" />
 
       {/* Main content */}
       <main className="max-w-3xl mx-auto px-4 py-10">
