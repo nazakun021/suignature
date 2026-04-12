@@ -1,0 +1,14 @@
+import { createBrowserClient } from '@supabase/ssr';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+export function createClient() {
+  if (!supabaseUrl || !supabaseAnonKey) {
+    // Return a no-op client when env vars are not configured.
+    // This allows the app to build and run in dev mode without Supabase.
+    return null;
+  }
+
+  return createBrowserClient(supabaseUrl, supabaseAnonKey);
+}

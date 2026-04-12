@@ -282,13 +282,105 @@
 
 ---
 
-## HARD STOPS — Do NOT touch these unless full MVP is working
+## PHASE 2A — Foundation (zkLogin + Profiles) ✅ COMPLETE
 
-- [ ] ~~zkLogin integration~~
-- [ ] ~~Sponsored transactions~~
-- [ ] ~~Mainnet deployment~~
-- [ ] ~~User authentication system~~
-- [ ] ~~Database / off-chain storage~~
+### 2A1. Move Code Quality
+
+- [x] Update tests to use `assert_eq!` instead of `assert!` for comparisons
+- [x] Use `std::unit_test::destroy` instead of `test_scenario::return_to_sender`
+- [x] Confirm all Move tests pass (`sui move test` — 2/2)
+
+### 2A2. New Dependencies
+
+- [x] Install `@mysten/zklogin @supabase/supabase-js @supabase/ssr`
+
+### 2A3. Supabase Client Setup
+
+- [x] Create `lib/supabase/client.ts` (browser client with null guard)
+- [x] Create `lib/supabase/server.ts` (server client with null guard)
+- [x] Create `lib/supabase/middleware.ts` (session refresh with null guard)
+
+### 2A4. zkLogin Integration
+
+- [x] Create `lib/zklogin.ts` (nonce generation, address derivation, session storage)
+- [x] Build `ZkLoginButton` component (Google OAuth redirect)
+- [x] Create `api/auth/zklogin/start` route (generates OAuth URL)
+- [x] Create `api/auth/zklogin/complete` route (validates JWT, creates user)
+
+### 2A5. Auth Context + Middleware
+
+- [x] Create `lib/auth-context.tsx` (React context for auth state)
+- [x] Create `proxy.ts` (Next.js 16 proxy for session refresh + auth guard)
+- [x] Add `AuthProvider` to app providers chain
+
+### 2A6. User Profile API
+
+- [x] Create `api/users/me` route (GET + PUT own profile)
+- [x] Create `api/users/[username]` route (public profile)
+- [x] Username validation (3-30 chars, lowercase, unique)
+
+### 2A7. New Pages
+
+- [x] Convert `/` from issuer dashboard → marketing landing page
+- [x] Create `/issue` page (moved issuer form, preserves Phase 1 wallet flow)
+- [x] Create `/login` page (zkLogin with Google + wallet fallback)
+- [x] Create `/dashboard` layout (sidebar: Credentials, Profile, Settings)
+- [x] Create `/dashboard` page (credential grid + portfolio setup prompt)
+- [x] Create `/u/[username]` public portfolio page (Credly-style)
+
+### 2A8. New Components
+
+- [x] `ZkLoginButton` — Google sign-in with zkLogin flow
+- [x] `PortfolioGrid` — responsive credential card grid
+- [x] `VerificationBadge` — "Verified on Sui" badge (sm/md/lg variants)
+
+### 2A9. Credential Fetching
+
+- [x] Create `lib/fetchUserCredentials.ts` (fetch owned objects by struct type)
+
+### 2A10. Verify Page Updates
+
+- [x] Added discovery links to `/verify/[objectId]` footer
+- [x] "View all credentials from [Org Name]" link
+- [x] "See [Volunteer]'s full portfolio" link
+
+### 2A11. Environment + Config
+
+- [x] Updated `.env.example` with Supabase + Google OAuth vars
+- [x] Build passes with zero TypeScript errors (`npm run build`)
+
+---
+
+## PHASE 2B — Organization Layer 🔮 PLANNED
+
+- [ ] Build `/org/new` creation form
+- [ ] Create `organizations` table + API routes
+- [ ] Build `/org/[slug]` public page
+- [ ] Integrate Stripe (checkout session + webhook)
+- [ ] Build `/org/upgrade` payment page
+- [ ] Implement `SubscriptionGate` middleware
+- [ ] Build `/org/[slug]/dashboard` control panel
+
+---
+
+## PHASE 2C — Issuance Pipeline 🔮 PLANNED
+
+- [ ] Integrate Shinami gas sponsorship
+- [ ] Build sponsored `issue_credential` API route
+- [ ] Build `/org/[slug]/events/new` form
+- [ ] Build event detail + individual issuance form
+- [ ] Build CSV bulk importer + validation
+- [ ] Build batch issuance pipeline (queue + retry on failure)
+
+---
+
+## PHASE 2D — Polish + Discovery 🔮 PLANNED
+
+- [ ] Add credential visibility toggle (public/private) on dashboard
+- [ ] Add org search/browse page
+- [ ] SEO: `generateMetadata` for portfolio + org pages
+- [ ] OpenGraph image generation for certificates
+- [ ] Test full flow end-to-end on Mainnet
 
 ---
 
