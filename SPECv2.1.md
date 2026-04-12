@@ -2,9 +2,13 @@
 
 ### Scope: 30-minute implementation window
 
-> **Premise:** Drop auth entirely. Profiles are public, wallet-address-based pages
-> fetched 100% from Sui RPC. No Supabase writes. No login. No session.
-> Works for anyone with a Sui address — paste it in, see the page.
+> **Premise:** [DONE] Phase 2: Public Profile Refactor (Phase 2B)
+
+- [x] Address-based routes `/u/[address]` and `/issuer/[address]`
+- [x] On-chain data fetching logic (Transaction-based)
+- [x] Drop legacy Supabase/Auth/zkLogin logic
+- [x] Cleaned up unused components and APIs
+- [x] Updated Landing Page CTAs
 
 ---
 
