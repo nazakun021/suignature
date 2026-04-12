@@ -2,6 +2,7 @@
 module suignature::credential_tests;
 
 use sui::test_scenario;
+use std::unit_test::{assert_eq, destroy};
 use suignature::credential::{Self, Credential};
 
 #[test]
@@ -34,13 +35,13 @@ fun issue_and_verify_credential() {
     {
         let cred = test_scenario::take_from_sender<Credential>(&scenario);
 
-        assert!(*cred.volunteer_name() == b"Juan dela Cruz".to_string());
-        assert!(*cred.issuer_name() == b"YGG Pilipinas".to_string());
-        assert!(cred.issuer_address() == issuer);
-        assert!(*cred.project_or_event() == b"Sui Builders Program Davao".to_string());
-        assert!(cred.skills_verified().length() == 2);
+        assert_eq!(*cred.volunteer_name(), b"Juan dela Cruz".to_string());
+        assert_eq!(*cred.issuer_name(), b"YGG Pilipinas".to_string());
+        assert_eq!(cred.issuer_address(), issuer);
+        assert_eq!(*cred.project_or_event(), b"Sui Builders Program Davao".to_string());
+        assert_eq!(cred.skills_verified().length(), 2);
 
-        test_scenario::return_to_sender(&scenario, cred);
+        destroy(cred);
     };
 
     scenario.end();
