@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { BulkUploader } from '@/components/BulkUploader';
 
 export default async function EventDashboardPage({
   params,
@@ -98,10 +99,7 @@ export default async function EventDashboardPage({
              <div className="border rounded-lg p-6 bg-gray-50">
                 <h3 className="font-semibold text-gray-900 mb-4">Bulk Issue (CSV)</h3>
                 <p className="text-sm text-gray-500 mb-4">Upload a CSV to batch issue credentials to hundreds of recipients at once.</p>
-                {/* Future implementation: CSV Uploader */}
-                <button disabled className="w-full py-2 bg-white border border-gray-300 shadow-sm opacity-50 text-gray-700 rounded-lg text-sm font-medium">
-                  Upload CSV
-                </button>
+                <BulkUploader eventId={eventData.id} orgSlug={slug} />
              </div>
           </div>
         </div>

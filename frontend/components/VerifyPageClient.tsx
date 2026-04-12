@@ -271,7 +271,7 @@ function DiscoveryLinks({ credential }: { credential: CredentialData }) {
   return (
     <div className="flex flex-col sm:flex-row gap-2 py-2 border-b border-gray-100">
       <a
-        href={`/verify/${credential.objectId}`}
+        href={`/issuer/${credential.issuerAddress}`}
         className="text-xs text-gray-500 hover:text-indigo-600 transition-colors flex items-center gap-1"
       >
         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -282,7 +282,7 @@ function DiscoveryLinks({ credential }: { credential: CredentialData }) {
       </a>
       <span className="hidden sm:inline text-gray-300">·</span>
       <a
-        href="#"
+        href={`/u/${credential.ownerAddress}`}
         className="text-xs text-gray-500 hover:text-indigo-600 transition-colors flex items-center gap-1"
       >
         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

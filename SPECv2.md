@@ -790,11 +790,11 @@ PLATFORM_WALLET_PRIVATE_KEY=
 
 **Goal:** Hosts can issue credentials with zero volunteer friction
 
-- [ ] Integrate Shinami gas sponsorship
-- [ ] Build sponsored `issue_credential` API route
-- [ ] Build `/org/[slug]/events/new` form
-- [ ] Build event detail + individual issuance form
-- [ ] Build CSV bulk importer + validation
+- [x] Integrate Shinami gas sponsorship
+- [x] Build sponsored `issue_credential` API route
+- [x] Build `/org/[slug]/events/new` form
+- [x] Build event detail + individual issuance form
+- [x] Build CSV bulk importer + validation
 - [ ] Build batch issuance pipeline (queue + retry on failure)
 - [ ] Email volunteer receipt on credential issuance
 
