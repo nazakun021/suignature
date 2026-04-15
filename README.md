@@ -1,28 +1,74 @@
-# suignature
+# SuiGnature
 
 ### Verifiable Proof of Work on the Sui Blockchain
 
-Built at the **Sui Builders Program — Davao** | April 11–12, 2026
+**Champion — Best Case Presentation** | Sui Builders Program Davao (April 11–12, 2026)
 
 ---
 
-## What is this?
+## The Award-Winning Vision
 
-suignature turns community contributions into cryptographically verified, non-transferable credentials on the Sui blockchain.
+**Team Suignature** addressed a critical gap in the digital economy: the difficulty of verifying specialized skills and "invisible" community contributions.
 
-Organizations issue **Soulbound Tokens (SBTs)** to volunteers who organize events, mentor others, or complete programs. Volunteers build a portable proof-of-work portfolio. Recruiters verify instantly — no crypto knowledge required.
+At the Sui Builders Program Davao — a collaboration between YGG Pilipinas, Metaversity, DICT XI, and the ICT Industry Development Bureau (IIDB) — Suignature emerged as the **Champion**, demonstrating how blockchain technology can turn volunteer efforts into professional value.
+
+> _"Our goal is to help local talent turn community work—such as event hosting, management, and logistics—into a verified digital identity that global employers can trust."_
 
 ---
 
-## How it works
+## What is Suignature?
 
-1. **Connect Wallet** — volunteers connect their Sui wallet (no account signup needed)
-2. **Organization issues** a soulbound credential via the `/issue` page
-3. **Credential appears** in the volunteer's dashboard at `/dashboard`
-4. **Share anywhere** — the `/verify/[objectId]` link or `/u/[address]` portfolio page
-5. **Anyone verifies** — clean certificate view, no account needed
+Suignature is a decentralized platform that turns community contributions into cryptographically verified, non-transferable credentials on the Sui blockchain.
 
-The credential is non-transferable by design: the Sui Move struct intentionally omits the `store` ability, making it impossible to sell, trade, or fake.
+By utilizing **Soulbound Tokens (SBTs)**, Suignature ensures that achievements are permanent, secure, and tamper-proof. Unlike standard NFTs, these credentials cannot be sold, traded, or faked, creating a foundation for a truly decentralized portfolio.
+
+### Turning Volunteerism into Professional Value
+
+- **Permanent Proof:** Build a portable proof-of-work portfolio that lasts forever.
+- **Instant Verification:** Recruiters and employers can verify expertise with a single, immutable link.
+- **Empowering Talent:** Bridging the gap between local community work and the global digital workforce.
+
+---
+
+## How It Works
+
+1.  **Connect Wallet** — Volunteers connect their Sui wallet (no account signup needed).
+2.  **Organization Issues** — Event organizers issue a soulbound credential via the `/issue` portal.
+3.  **Build Portfolio** — Credentials appear automatically in the volunteer's dashboard.
+4.  **Share Anywhere** — Use unique `/verify/[objectId]` links or public `/u/[address]` portfolio pages.
+5.  **Anyone Verifies** — A clean, professional certificate view allows anyone to verify the claim without needing a wallet.
+
+---
+
+## Technical Implementation
+
+### Smart Contract: Sui Move
+
+The core of Suignature is implemented in Sui Move, leveraging the 2024 edition's safety and performance features.
+
+- **Soulbound by Design:** The `Credential` struct uses the `key` ability but intentionally omits the `store` ability. This enforces non-transferability at the Move VM level.
+- **Cryptographic Provenance:** The `issue_credential` function captures the issuer's address directly from the transaction context (`ctx.sender()`), ensuring the source of the credential is authenticated on-chain.
+- **On-chain Metadata:** Each credential stores the volunteer's name, the project/event, specific skills verified, and a timestamp.
+
+```rust
+// sources/credential.move snippet
+public struct Credential has key {
+    id: UID,
+    volunteer_name: String,
+    project_or_event: String,
+    skills_verified: vector<String>,
+    issuer_name: String,
+    issuer_address: address,
+    timestamp: u64,
+}
+```
+
+---
+
+## Developer Resources
+
+- **[SETUP.md](./SETUP.md)**: Full instructions for local environment setup, configuration, and testing.
+- **[ARCHITECTURE.md](./docs/ARCHITECTURE.md)**: Detailed design and data flow documentation.
 
 ---
 
@@ -30,14 +76,12 @@ The credential is non-transferable by design: the Sui Move struct intentionally 
 
 | Layer              | Technology                      |
 | ------------------ | ------------------------------- |
-| Smart Contract     | Sui Move (2024 edition)         |
-| Frontend           | Next.js 16 + React + TypeScript |
-| Authentication     | Wallet-based (Sui dApp Kit)     |
-| Wallet Integration | @mysten/dapp-kit                |
-| On-chain Reads     | @mysten/sui                     |
-| Styling            | Tailwind CSS                    |
-| Deployment         | Vercel                          |
-| Network            | Sui Testnet                     |
+| **Smart Contract** | Sui Move (2024 edition)         |
+| **Frontend**       | Next.js 16 + React + TypeScript |
+| **Authentication** | Wallet-based (Sui dApp Kit)     |
+| **Wallet Sync**    | @mysten/dapp-kit                |
+| **Styling**        | Tailwind CSS                    |
+| **Network**        | Sui Testnet                     |
 
 ---
 
@@ -45,154 +89,28 @@ The credential is non-transferable by design: the Sui Move struct intentionally 
 
 ```
 suignature/
-├── Move.toml                  # Package manifest (Move 2024 edition)
 ├── sources/
-│   └── credential.move        # Soulbound credential module
+│   └── credential.move        # Soulbound credential logic
 ├── tests/
-│   └── credential_tests.move  # Move unit tests (assert_eq!, test_utils)
+│   └── credential_tests.move  # Move unit tests
 ├── frontend/
 │   ├── app/                   # Next.js App Router
-│   │   ├── page.tsx           # Marketing landing page
-│   │   ├── dashboard/         # Volunteer credential dashboard
-│   │   ├── issue/             # Organization credential minting
+│   │   ├── dashboard/         # Volunteer portfolio view
+│   │   ├── issue/             # Organization minting portal
 │   │   ├── u/[address]/       # Public portfolio pages
-│   │   ├── verify/[objectId]/ # Public certificate verification
-│   │   └── api/               # API routes
-│   ├── components/            # UI components
-│   ├── lib/                   # Shared utilities (Sui, Credential)
-├── docs/                      # Project documentation
-│   ├── ARCHITECTURE.md        # Detailed architecture overview
-│   └── DEPLOYMENT.md          # Deployment records
+│   │   └── verify/[objectId]/ # Public certificate verification
+│   ├── lib/                   # Sui utilities & SDK integration
 ```
-
----
-
-## Smart Contract
-
-The core of suignature is a single Move module (`suignature::credential`) that:
-
-- Defines a `Credential` struct with `key` ability only (no `store` = soulbound)
-- Provides an `issue_credential` entry function for minting
-- Captures the issuer's address cryptographically via `ctx.sender()`
-- Transfers the credential directly to the recipient's wallet
-
-### Build & Test
-
-```bash
-# Build the package
-sui move build
-
-# Run tests
-sui move test
-```
-
-### Deploy to Testnet
-
-```bash
-# Switch to testnet
-sui client switch --env testnet
-
-# Request faucet tokens
-sui client faucet
-
-# Publish
-sui client publish --gas-budget 50000000
-```
-
----
-
-## Developer Setup
-
-### 1. Prerequisites
-
-- **Sui CLI (>= 1.69.0):** [Installation Guide](https://docs.sui.io/guides/developer/getting-started/sui-install)
-- **Node.js (>= 18.x):** [Download](https://nodejs.org/)
-- **Wallet:** A Sui wallet (like [Sui Wallet](https://suiwallet.io/) or [Surf](https://surf.tech/)) with Testnet tokens.
-
-### 2. Local Installation
-
-```bash
-# 1. Clone the repository
-git clone https://github.com/nazakun021/suignature.git
-cd suignature
-
-# 2. Build and Test the Smart Contract
-sui move build
-sui move test
-
-# 3. Setup Frontend
-cd frontend
-npm install
-
-# 4. Environment Configuration
-cp .env.example .env.local
-# Fill in your keys (see Environment Variables section)
-```
-
-### 3. Environment Variables
-
-```env
-# Sui
-NEXT_PUBLIC_PACKAGE_ID=           # From sui client publish output
-NEXT_PUBLIC_MODULE_NAME=credential
-NEXT_PUBLIC_FUNCTION_NAME=issue_credential
-NEXT_PUBLIC_SUI_NETWORK=testnet
-```
-
-### 4. Run Locally
-
-```bash
-cd frontend
-npm run dev
-```
-
----
-
-## Development Workflow
-
-### GitHub & Branching Strategy
-
-| Branch      | Purpose                                                 |
-| :---------- | :------------------------------------------------------ |
-| `main`      | Production-ready code. Never push directly here.        |
-| `feat/`     | New features or enhancements (e.g., `feat/issue-form`). |
-| `fix/`      | Bug fixes (e.g., `fix/styling-issue`).                  |
-| `refactor/` | Code refactoring without changing functionality.        |
-
-### Commit Conventions
-
-We use the [Conventional Commits](https://www.conventionalcommits.org/) standard:
-
-- `feat: add skill tagging to credentials`
-- `fix: correct timestamp formatting on verify page`
-- `docs: update setup instructions in readme`
-
----
-
-## Routes
-
-| Route                | Access | Description                          |
-| -------------------- | ------ | ------------------------------------ |
-| `/`                  | Public | Marketing landing page               |
-| `/dashboard`         | Wallet | Volunteer credential dashboard       |
-| `/issue`             | Wallet | Organization credential minting form |
-| `/u/[address]`       | Public | Volunteer portfolio page             |
-| `/verify/[objectId]` | Public | Certificate verification page        |
 
 ---
 
 ## Roadmap
 
-### ✅ Completed
-
-- **Phase A–D:** Smart contract, issuer UI, verifier UI, deployment
-- **Phase 2A:** Wallet-based dashboard, portfolio pages, landing page
-
-### 🔮 Planned
-
-- **Phase 2B:** Organization layer (Stripe subscriptions, org profiles, dashboards)
-- **Phase 2C:** Sponsored transactions (Shinami), bulk CSV issuance, event management
-- **Phase 2D:** Discovery (org browse/search), SEO, OpenGraph images
+- [x] **Core MVP:** Smart contract and basic issuance/verification.
+- [x] **Portfolio Layer:** Wallet-based dashboards and public profile pages.
+- [ ] **Organization Layer:** Stripe subscriptions and organization profiles.
+- [ ] **Scale:** Sponsored transactions (Shinami) and bulk CSV issuance.
+- [ ] **Discovery:** Browse and search for verified organizations and events.
 
 ---
 
@@ -206,6 +124,6 @@ We use the [Conventional Commits](https://www.conventionalcommits.org/) standard
 
 ## Built by
 
-Built by **Naza** and friends for the Sui Builders Program Davao Hackathon.
+Created by **Naza** and friends for the **Sui Builders Program Davao Hackathon**.
 
 Organized by YGG Pilipinas × Metaversity × DICT × IIDB.
