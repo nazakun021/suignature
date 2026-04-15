@@ -24,5 +24,5 @@ build-frontend/
 
 # AI Agent / Specs
 .agent/
-SPEC*.md
+docs/specifications/
 TODO.md

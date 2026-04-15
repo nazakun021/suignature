@@ -16,10 +16,10 @@ Organizations issue **Soulbound Tokens (SBTs)** to volunteers who organize event
 
 ## How it works
 
-1. **Sign in with Google** — volunteers use zkLogin (no wallet, no seed phrases)
+1. **Connect Wallet** — volunteers connect their Sui wallet (no account signup needed)
 2. **Organization issues** a soulbound credential via the `/issue` page
 3. **Credential appears** in the volunteer's dashboard at `/dashboard`
-4. **Share anywhere** — the `/verify/[objectId]` link or `/u/[username]` portfolio page
+4. **Share anywhere** — the `/verify/[objectId]` link or `/u/[address]` portfolio page
 5. **Anyone verifies** — clean certificate view, no account needed
 
 The credential is non-transferable by design: the Sui Move struct intentionally omits the `store` ability, making it impossible to sell, trade, or fake.
@@ -28,17 +28,16 @@ The credential is non-transferable by design: the Sui Move struct intentionally 
 
 ## Tech Stack
 
-| Layer              | Technology                                  |
-| ------------------ | ------------------------------------------- |
-| Smart Contract     | Sui Move (2024 edition)                     |
-| Frontend           | Next.js 16 + React + TypeScript             |
-| Authentication     | Sui zkLogin (Google OAuth) + Wallet Connect |
-| Database           | Supabase (profiles, metadata)               |
-| Wallet Integration | @mysten/dapp-kit                            |
-| On-chain Reads     | @mysten/sui                                 |
-| Styling            | Tailwind CSS                                |
-| Deployment         | Vercel                                      |
-| Network            | Sui Testnet                                 |
+| Layer              | Technology                      |
+| ------------------ | ------------------------------- |
+| Smart Contract     | Sui Move (2024 edition)         |
+| Frontend           | Next.js 16 + React + TypeScript |
+| Authentication     | Wallet-based (Sui dApp Kit)     |
+| Wallet Integration | @mysten/dapp-kit                |
+| On-chain Reads     | @mysten/sui                     |
+| Styling            | Tailwind CSS                    |
+| Deployment         | Vercel                          |
+| Network            | Sui Testnet                     |
 
 ---
 
@@ -54,18 +53,16 @@ suignature/
 ├── frontend/
 │   ├── app/                   # Next.js App Router
 │   │   ├── page.tsx           # Marketing landing page
-│   │   ├── login/             # zkLogin (Google sign-in)
 │   │   ├── dashboard/         # Volunteer credential dashboard
 │   │   ├── issue/             # Organization credential minting
-│   │   ├── u/[username]/      # Public portfolio pages
+│   │   ├── u/[address]/       # Public portfolio pages
 │   │   ├── verify/[objectId]/ # Public certificate verification
-│   │   └── api/               # Auth + profile API routes
+│   │   └── api/               # API routes
 │   ├── components/            # UI components
-│   ├── lib/                   # Shared utilities (Sui, Supabase, zkLogin)
-│   └── proxy.ts               # Auth guard + session refresh
-├── SPECv2.md                  # Phase 2 product specification
-├── TODO.md                    # Master roadmap tracker
-└── REPOSITORY_OVERVIEW.md     # Detailed architecture overview
+│   ├── lib/                   # Shared utilities (Sui, Credential)
+├── docs/                      # Project documentation
+│   ├── ARCHITECTURE.md        # Detailed architecture overview
+│   └── DEPLOYMENT.md          # Deployment records
 ```
 
 ---
@@ -140,17 +137,7 @@ NEXT_PUBLIC_PACKAGE_ID=           # From sui client publish output
 NEXT_PUBLIC_MODULE_NAME=credential
 NEXT_PUBLIC_FUNCTION_NAME=issue_credential
 NEXT_PUBLIC_SUI_NETWORK=testnet
-
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=         # Your Supabase project URL
-NEXT_PUBLIC_SUPABASE_ANON_KEY=    # Your Supabase anon key
-SUPABASE_SERVICE_ROLE_KEY=        # Your Supabase service role key
-
-# zkLogin (Google OAuth)
-NEXT_PUBLIC_GOOGLE_CLIENT_ID=     # Google Cloud OAuth 2.0 client ID
 ```
-
-> **Note:** The app will build and run without Supabase/Google credentials — auth features will be disabled but the issuer form and verification pages will work.
 
 ### 4. Run Locally
 
@@ -187,10 +174,9 @@ We use the [Conventional Commits](https://www.conventionalcommits.org/) standard
 | Route                | Access | Description                          |
 | -------------------- | ------ | ------------------------------------ |
 | `/`                  | Public | Marketing landing page               |
-| `/login`             | Public | Google sign-in (zkLogin)             |
-| `/dashboard`         | Auth   | Volunteer credential dashboard       |
+| `/dashboard`         | Wallet | Volunteer credential dashboard       |
 | `/issue`             | Wallet | Organization credential minting form |
-| `/u/[username]`      | Public | Volunteer portfolio page             |
+| `/u/[address]`       | Public | Volunteer portfolio page             |
 | `/verify/[objectId]` | Public | Certificate verification page        |
 
 ---
@@ -200,7 +186,7 @@ We use the [Conventional Commits](https://www.conventionalcommits.org/) standard
 ### ✅ Completed
 
 - **Phase A–D:** Smart contract, issuer UI, verifier UI, deployment
-- **Phase 2A:** zkLogin auth, Supabase profiles, dashboard, portfolio pages, landing page
+- **Phase 2A:** Wallet-based dashboard, portfolio pages, landing page
 
 ### 🔮 Planned
 

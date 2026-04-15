@@ -6,7 +6,7 @@ Suignature is a decentralized application for issuing and verifying **soulbound 
 
 ## 🏗️ Architecture & Core Concepts
 
-The project is split into a **Sui Move Smart Contract** (on-chain), a **Next.js Frontend** (multi-flow app), and a **Supabase Backend** (profiles & metadata).
+The project is split into a **Sui Move Smart Contract** (on-chain) and a **Next.js Frontend** (multi-flow app).
 
 ### 1. On-Chain: Soulbound Credentials (`sources/credential.move`)
 
@@ -19,24 +19,20 @@ The project is split into a **Sui Move Smart Contract** (on-chain), a **Next.js 
 
 ### 2. Frontend: Multi-Flow Application (`frontend/`)
 
-- **Tech Stack:** Next.js 16, TypeScript, TailwindCSS, `@mysten/dapp-kit`, `@mysten/sui`, `@supabase/ssr`.
-- **Authentication:** Dual-mode auth system:
-  - **zkLogin (Google sign-in)** — Volunteers sign in with Google; a Sui address is derived automatically via `@mysten/sui/zklogin`. No wallet needed.
-  - **Wallet Connect** — Organizations use direct Sui wallet for credential minting at `/issue`.
+- **Tech Stack:** Next.js 16, TypeScript, TailwindCSS, `@mysten/dapp-kit`, `@mysten/sui`.
+- **Authentication:** Purely wallet-based via `@mysten/dapp-kit`.
 - **Primary Flows:**
-  - **Landing Page (`/`):** Marketing page with hero, how-it-works, trust section, pricing preview.
-  - **Login (`/login`):** zkLogin flow with Google sign-in button + wallet fallback.
-  - **Dashboard (`/dashboard`):** Volunteer credential grid, profile setup prompt, portfolio link.
+  - **Landing Page (`/`):** Marketing page with hero, how-it-works, and trust sections.
+  - **Dashboard (`/dashboard`):** Volunteer credential grid — reads objects owned by the connected wallet address.
   - **Issuer Form (`/issue`):** For organizations to connect their Sui wallet and mint credentials.
-  - **Public Portfolio (`/u/[username]`):** Credly-style portfolio page with credential grid.
+  - **Public Portfolio (`/u/[address]`):** Public portfolio page with a credential grid for any Sui address.
+  - **Issuer Portfolio (`/issuer/[address]`):** Public profile showing all credentials issued by a specific address.
   - **Verification Page (`/verify/[objectId]`):** Public, Web2-optimized certificate view (no wallet required).
 
-### 3. Backend: Supabase (Profiles & Metadata)
+### 3. Data Strategy
 
-- **Client Setup:** Browser client, server client, and middleware client — all with graceful null guards when env vars are not configured.
-- **Auth Flow:** Supabase session management via Next.js proxy (formerly middleware) for token refresh and route protection.
-- **API Routes:** RESTful routes for user profiles (GET/PUT own profile, GET public profile by username).
-- **Design Principle:** Supabase is a cache/index layer — the blockchain remains the sole source of truth for all credentials.
+- **Blockchain as Single Source of Truth:** All credential data, issuer records, and ownership are stored directly on the Sui blockchain.
+- **No Database:** The application reads directly from the blockchain via Sui RPC, eliminating the need for a separate backend database for core features.
 
 ---
 
@@ -51,33 +47,27 @@ The project is split into a **Sui Move Smart Contract** (on-chain), a **Next.js 
 ├── frontend/              # Next.js Application
 │   ├── app/               # Next.js App Router
 │   │   ├── page.tsx       # Marketing Landing Page
-│   │   ├── login/         # zkLogin page (Google sign-in)
-│   │   ├── dashboard/     # Volunteer dashboard (layout + page)
+│   │   ├── dashboard/     # Volunteer dashboard
 │   │   ├── issue/         # Issuer form (wallet-based minting)
-│   │   ├── u/             # Public portfolio routes ([username])
+│   │   ├── u/             # Public portfolio routes ([address])
+│   │   ├── issuer/        # Issuer profile routes ([address])
 │   │   ├── verify/        # Public verification routes ([objectId])
-│   │   └── api/           # API routes (auth, users)
-│   │       ├── auth/      # zkLogin start/complete endpoints
-│   │       └── users/     # Profile CRUD endpoints
+│   │   └── api/           # API routes (minimal)
 │   ├── components/        # UI Components
 │   │   ├── CertificateCard, VerifyPageClient, VerificationTrail
-│   │   ├── ZkLoginButton, PortfolioGrid, VerificationBadge
+│   │   ├── PortfolioGrid, VerificationBadge
 │   │   └── CredentialForm, WalletStatus, SkillBadge, SuccessCard
 │   ├── lib/               # Shared utilities
-│   │   ├── supabase/      # Supabase client (browser/server/middleware)
-│   │   ├── zklogin.ts     # zkLogin utilities (nonce, address derivation)
-│   │   ├── auth-context.tsx # React auth context provider
-│   │   ├── fetchUserCredentials.ts # Fetch owned credentials by address
-│   │   ├── credential.ts  # On-chain credential parsing
-│   │   ├── sui.ts         # SuiClient instance
-│   │   └── constants.ts   # Package IDs, config
-│   └── proxy.ts           # Next.js 16 proxy (auth guard + session refresh)
-├── SPECv2.md              # Phase 2 specification (product evolution)
-├── SPEC_A.md              # Phase A: Smart Contract Specification
-├── SPEC_B.md              # Phase B: Issuer Frontend Specification
-├── SPEC_C.md              # Phase C: Public Verification Specification
-├── TODO.md                # Master roadmap and implementation checklist
-└── Move.toml              # Move package configuration
+│   │   ├── fetchUserCredentials.ts   # Fetch owned credentials by address
+│   │   ├── fetchIssuedCredentials.ts # Fetch issued credentials by address
+│   │   ├── credential.ts             # On-chain credential parsing
+│   │   ├── sui.ts                    # SuiClient instance
+│   │   └── constants.ts              # Package IDs, config
+├── docs/                  # Project Documentation
+│   ├── ARCHITECTURE.md    # This file
+│   └── DEPLOYMENT.md      # Deployment records
+├── Move.toml              # Move package configuration
+└── .gitignore             # Standard and project-specific ignores
 ```
 
 ---
@@ -111,22 +101,11 @@ The project is split into a **Sui Move Smart Contract** (on-chain), a **Next.js 
 - [x] Published to **Sui Testnet**.
 - [x] Frontend deployed on **Vercel** with full environment variable parity.
 
-### ✅ Phase 2A: Foundation (Auth + Profiles)
+### ✅ Phase 2A: Wallet-Based Dashboard & Portfolios
 
-- [x] **zkLogin Integration:** Google sign-in → Sui address derivation (ephemeral keypair, nonce, salt).
-- [x] **Supabase Setup:** Browser/server/middleware clients with graceful null guards.
-- [x] **Auth API Routes:** `/api/auth/zklogin/start` and `/api/auth/zklogin/complete`.
-- [x] **User Profile API:** `/api/users/me` (GET/PUT) and `/api/users/[username]` (GET).
-- [x] **Dashboard:** Volunteer credential grid with sidebar navigation.
-- [x] **Public Portfolio:** `/u/[username]` Credly-style portfolio page.
-- [x] **Landing Page:** Marketing page with hero, how-it-works, trust section, pricing.
-- [x] **Move Tests:** Upgraded to `assert_eq!` and `std::unit_test::destroy`.
-
-### 🔮 Phase 2B: Organization Layer (Planned)
-
-### 🔮 Phase 2C: Issuance Pipeline (Planned)
-
-### 🔮 Phase 2D: Polish + Discovery (Planned)
+- [x] **Dashboard:** Volunteer credential grid showing owned SBTs.
+- [x] **Public Portfolios:** `/u/[address]` and `/issuer/[address]` pages for public sharing.
+- [x] **Simplified Stack:** Removed legacy database and auth dependencies.
 
 ---
 
@@ -156,10 +135,6 @@ NEXT_PUBLIC_PACKAGE_ID=...          # Sui package ID
 NEXT_PUBLIC_MODULE_NAME=credential
 NEXT_PUBLIC_FUNCTION_NAME=issue_credential
 NEXT_PUBLIC_SUI_NETWORK=testnet
-NEXT_PUBLIC_SUPABASE_URL=...        # Supabase project URL
-NEXT_PUBLIC_SUPABASE_ANON_KEY=...   # Supabase anon key
-SUPABASE_SERVICE_ROLE_KEY=...       # Supabase service role key
-NEXT_PUBLIC_GOOGLE_CLIENT_ID=...    # Google OAuth client ID
 ```
 
 ---
@@ -169,5 +144,5 @@ NEXT_PUBLIC_GOOGLE_CLIENT_ID=...    # Google OAuth client ID
 - **Network:** Sui **Testnet**.
 - **Package ID:** `0x8200046ee3637af5aaf00411789e04770914a3bcf73fb24f0a3ccccf6a8425ed`
 - **Live Demo:** [suignature.vercel.app](https://suignature.vercel.app/)
-- **Routes:** `/` (landing), `/login`, `/dashboard`, `/issue`, `/u/[username]`, `/verify/[objectId]`
+- **Routes:** `/` (landing), `/dashboard`, `/issue`, `/u/[address]`, `/issuer/[address]`, `/verify/[objectId]`
 - **Visual Identity:** "Signature" aesthetic — minimalist, high-contrast (dark mode issuer, light mode verification), focused on institutional trust.
