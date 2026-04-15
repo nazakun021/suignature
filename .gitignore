@@ -21,3 +21,8 @@ build-frontend/
 *.log
 .vscode/
 .idea/
+
+# AI Agent / Specs
+.agent/
+SPEC*.md
+TODO.md
